@@ -11,7 +11,7 @@ window.PRODUCTS = [
     "category": "Women",
     "subcategory": "Knitwear",
     "gender": "f",
-    "price_eur": 59.95,
+    "price_eur": 55,
     "sale_price_eur": null,
     "stock": 12,
     "color": "Cream",
