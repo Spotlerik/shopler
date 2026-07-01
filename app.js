@@ -603,8 +603,8 @@
   var ADMIN_DRAFT_KEY = "shopler_admin_draft", ADMIN_CFG_KEY = "shopler_admin_cfg";
   var adminDraft = null, adminStatus = "", adminStatusKind = "", adminShowCfg = false, adminBusy = false;
   function adminCfg() {
-    var d = { owner: "spotlerik", repo: "spotler-sales-tool", branch: "main",
-      prefix: "shopler/", baseUrl: "https://spotlerik.github.io/shopler", token: "" };
+    var d = { owner: "spotlerik", repo: "shopler", branch: "main",
+      prefix: "", baseUrl: "https://spotlerik.github.io/shopler", token: "" };
     try { var s = JSON.parse(localStorage.getItem(ADMIN_CFG_KEY) || "null"); if (s) Object.keys(s).forEach(function (k) { if (k in d) d[k] = s[k]; }); } catch (e) {}
     return d;
   }
