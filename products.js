@@ -1,4 +1,4 @@
-// Auto-generated from shopler-catalogue-40-skus.xlsx — do not edit by hand.
+// Auto-generated from products.json — do not edit by hand.
 // Mirror of products.json, loaded as a <script> so the app runs from file://
 window.PRODUCTS = [
   {
