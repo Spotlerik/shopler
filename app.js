@@ -50,6 +50,7 @@
     localStorage.setItem("shopler_lang", state.lang);
     localStorage.setItem("shopler_cart", JSON.stringify(state.cart));
   }
+  var sqzlBooted = false; // becomes true after the first render() (see PageReload note below)
 
   /* ---------------- i18n (UI chrome only; product copy comes from data) ---------------- */
   var I18N = {
@@ -390,7 +391,7 @@
     if (st === "low") labels += '<span class="clabel clabel--low">' + esc(t("only_left", { n: p.stock })) + "</span>";
     else if (st === "sold") labels += '<span class="clabel clabel--sold">' + esc(t("sold_out")) + "</span>";
     return '' +
-      '<article class="card' + (st === "sold" ? " is-sold" : "") + '">' +
+      '<article class="card' + (st === "sold" ? " is-sold" : "") + '" data-product-sku="' + esc(p.sku) + '">' +
         '<a class="card__media" href="#/product/' + esc(p.sku) + '">' +
           '<img class="card__img--lifestyle" src="' + esc(img(p.image_lifestyle)) + '" alt="' + esc(name(p)) + '" loading="lazy">' +
           '<img class="card__img--packshot" src="' + esc(img(p.image)) + '" alt="" aria-hidden="true" loading="lazy">' +
@@ -567,7 +568,7 @@
     ];
     return '<div class="wrap">' +
       '<nav class="breadcrumb"><a href="#/">Shopler</a> / <a href="#/c/' + esc(p.category.toLowerCase()) + '">' + esc(p.category) + '</a> / ' + esc(name(p)) + '</nav>' +
-      '<div class="pdp">' +
+      '<div class="pdp" data-product-sku="' + esc(p.sku) + '">' +
         '<div class="pdp__gallery">' +
           '<img src="' + esc(img(p.image_lifestyle)) + '" alt="' + esc(name(p)) + '">' +
           '<img src="' + esc(img(p.image)) + '" alt="' + esc(name(p)) + '">' +
@@ -577,6 +578,8 @@
           '<h1>' + esc(name(p)) + '</h1>' +
           '<div class="pdp__price">' + priceHTML(p, true) + '</div>' +
           '<div class="stock stock--' + st + '">' + esc(stockTxt) + '</div>' +
+          // social-proof / scarcity slot — empty; Activate fills at runtime (use case 9)
+          '<div class="perso-slot" data-activate="pdp-social"></div>' +
           (st === "sold" ? "" : sizeBlock) +
           '<button class="btn btn--block" data-add="' + esc(p.sku) + '"' + (hasSizes ? " data-needs-size" : "") + (addDisabled ? " disabled" : "") + '>' +
             esc(st === "sold" ? t("sold_out") : t("add_to_cart")) + '</button>' +
@@ -1131,6 +1134,11 @@
     else if (parts[0] === "checkout" && state.cart.length) trackInitiateCheckout();
     // Let Activate (when later connected) know the view changed and slots are ready.
     document.dispatchEvent(new CustomEvent("shopler:view", { detail: { route: parts, lang: state.lang } }));
+    // Re-evaluate Activate personalizations after each soft navigation / re-render.
+    // Skip the first render (sqzl.js evaluates once on initial load); every app.innerHTML
+    // replacement thereafter wipes injected personalizations, so re-trigger evaluation.
+    if (!sqzlBooted) { sqzlBooted = true; }
+    else { sqzlPush({ event: "PageReload" }); }
   }
 
   /* ---------------- Events (delegated) ---------------- */
