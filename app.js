@@ -667,6 +667,60 @@
     });
     return rows;
   }
+  // Escape text for XML content/attributes. Order matters: & must be first.
+  function xmlEsc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  }
+  // lowercase, spaces -> hyphens (matches the site's lowercase category routes, e.g. #/c/women).
+  function feedSlug(s) { return String(s || "").toLowerCase().replace(/\s+/g, "-"); }
+  // Build a valid RSS 2.0 XML feed for ONE language ("nl-NL" | "en-GB") from the
+  // SAME rows buildFeed() produces — Activate's importer needs XML, one language per feed.
+  function buildFeedXml(list, baseUrl, lang) {
+    var rows = buildFeed(list, baseUrl).filter(function (r) { return r.language === lang; });
+    var label = lang === "nl-NL" ? "Dutch" : "English";
+    var link = (baseUrl || "").replace(/\/+$/, "") + "/";
+    var out = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">\n' +
+      '  <channel>\n' +
+      '    <title>' + xmlEsc("Shopler product feed (" + lang + ")") + '</title>\n' +
+      '    <link>' + xmlEsc(link) + '</link>\n' +
+      '    <description>' + xmlEsc("Shopler demo product feed — " + label) + '</description>\n';
+    rows.forEach(function (r) {
+      var avail = (r.in_stock && r.stock > 0) ? "in stock" : "out of stock";
+      var e = [];
+      e.push('    <item>');
+      e.push('      <id>' + xmlEsc(r.id) + '</id>');
+      e.push('      <title>' + xmlEsc(r.name) + '</title>');
+      e.push('      <link>' + xmlEsc(r.url) + '</link>');
+      e.push('      <language>' + xmlEsc(r.language) + '</language>');
+      e.push('      <price>' + Number(r.price).toFixed(2) + ' ' + xmlEsc(r.currency) + '</price>');
+      if (r.sale_price != null) e.push('      <sale_price>' + Number(r.sale_price).toFixed(2) + ' ' + xmlEsc(r.currency) + '</sale_price>');
+      e.push('      <availability>' + avail + '</availability>');
+      e.push('      <inventory>' + parseInt(r.stock, 10) + '</inventory>');
+      e.push('      <brand>' + xmlEsc(r.brand) + '</brand>');
+      e.push('      <color>' + xmlEsc(r.color) + '</color>');
+      e.push('      <image_link>' + xmlEsc(r.image) + '</image_link>');
+      if (r.image_lifestyle) {
+        e.push('      <image_links>');
+        e.push('        <image_link>' + xmlEsc(r.image) + '</image_link>');
+        e.push('        <image_link>' + xmlEsc(r.image_lifestyle) + '</image_link>');
+        e.push('      </image_links>');
+      }
+      e.push('      <category_ids>');
+      e.push('        <category_id>' + xmlEsc(feedSlug(r.category)) + '</category_id>');
+      e.push('        <category_id>' + xmlEsc(feedSlug(r.category) + '-' + feedSlug(r.subcategory)) + '</category_id>');
+      e.push('      </category_ids>');
+      e.push('      <gender>' + xmlEsc(r.gender) + '</gender>');
+      e.push('      <material>' + xmlEsc(r.material) + '</material>');
+      e.push('      <season>' + xmlEsc(r.season) + '</season>');
+      e.push('    </item>');
+      out += e.join('\n') + '\n';
+    });
+    out += '  </channel>\n</rss>\n';
+    return out;
+  }
   function productsJsText(json) {
     return "// Auto-generated from products.json — do not edit by hand.\n" +
       "// Mirror of products.json, loaded as a <script> so the app runs from file://\n" +
@@ -719,13 +773,17 @@
     reader.onerror = function () { adminSetStatus("err", "Could not read that file."); renderAdmin(); };
     reader.readAsDataURL(file);
   }
-  // Write products.json + products.js + activate-feed.json to the repo.
+  // Write products.json + products.js + activate-feed.json + the two RSS XML feeds to the repo.
   function commitCatalogue(cfg, clean) {
     var json = JSON.stringify(clean, null, 2);
     var feed = JSON.stringify(buildFeed(clean, cfg.baseUrl), null, 2);
+    var xmlNl = buildFeedXml(clean, cfg.baseUrl, "nl-NL");
+    var xmlEn = buildFeedXml(clean, cfg.baseUrl, "en-GB");
     return ghPut(cfg, cfg.prefix + "products.json", json, "admin: update products.json")
       .then(function () { return ghPut(cfg, cfg.prefix + "products.js", productsJsText(json), "admin: update products.js"); })
-      .then(function () { return ghPut(cfg, cfg.prefix + "activate-feed.json", feed, "admin: regenerate activate-feed.json"); });
+      .then(function () { return ghPut(cfg, cfg.prefix + "activate-feed.json", feed, "admin: regenerate activate-feed.json"); })
+      .then(function () { return ghPut(cfg, cfg.prefix + "activate-feed-nl.xml", xmlNl, "admin: regenerate activate-feed-nl.xml"); })
+      .then(function () { return ghPut(cfg, cfg.prefix + "activate-feed-en.xml", xmlEn, "admin: regenerate activate-feed-en.xml"); });
   }
   function adminApplyLocal() {
     var err = validateDraft(adminDraft);
@@ -749,7 +807,7 @@
       adminUploads = {}; persistUploads(); // images now in the repo
       setCatalogue(clean); adminDraft = cloneList(clean); saveDraft();
       adminBusy = false;
-      adminSetStatus("ok", "Saved / committed to " + cfg.owner + "/" + cfg.repo + "@" + cfg.branch + " · products.json, products.js & activate-feed.json" + (nUploads ? " + " + nUploads + " image(s)" : "") + " updated.");
+      adminSetStatus("ok", "Saved / committed to " + cfg.owner + "/" + cfg.repo + "@" + cfg.branch + " · products.json, products.js, activate-feed.json, activate-feed-nl.xml & activate-feed-en.xml" + (nUploads ? " + " + nUploads + " image(s)" : "") + " updated.");
       renderChrome(); renderAdmin();
     }).catch(function (e) {
       adminBusy = false; adminSetStatus("err", "GitHub save failed: " + e.message);

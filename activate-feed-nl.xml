@@ -1,0 +1,938 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+  <channel>
+    <title>Shopler product feed (nl-NL)</title>
+    <link>https://spotlerik.github.io/shopler/</link>
+    <description>Shopler demo product feed — Dutch</description>
+    <item>
+      <id>AO-W-001</id>
+      <title>Geribde gebreide trui</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-W-001</link>
+      <language>nl-NL</language>
+      <price>59.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>12</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Cream</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-W-001.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-001.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-001-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-knitwear</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton blend</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-W-002</id>
+      <title>Wijde pantalon</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-W-002</link>
+      <language>nl-NL</language>
+      <price>69.95 EUR</price>
+      <sale_price>49.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>7</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-W-002.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-002.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-002-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-trousers</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Viscose</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-M-003</id>
+      <title>Merino trui</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-M-003</link>
+      <language>nl-NL</language>
+      <price>64.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>2</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Navy</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-M-003.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-003.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-003-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-knitwear</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Merino wool</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-M-004</id>
+      <title>Geplooide chino</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-M-004</link>
+      <language>nl-NL</language>
+      <price>59.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>10</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Stone</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-M-004.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-004.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-004-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-trousers</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-W-005</id>
+      <title>Wollen mantel</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-W-005</link>
+      <language>nl-NL</language>
+      <price>119.95 EUR</price>
+      <sale_price>89.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>4</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Camel</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-W-005.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-005.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-005-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-outerwear</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Wool blend</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-U-006</id>
+      <title>Sjaal cashmere-touch</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-U-006</link>
+      <language>nl-NL</language>
+      <price>34.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>18</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Grey</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-U-006.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-U-006.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-U-006-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-scarves</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Acrylic blend</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-W-007</id>
+      <title>Satijnen midirok</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-W-007</link>
+      <language>nl-NL</language>
+      <price>49.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>3</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Olive</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-W-007.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-007.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-W-007-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-skirts</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Satin</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>AO-M-008</id>
+      <title>Overshirt jas</title>
+      <link>https://spotlerik.github.io/shopler/#/product/AO-M-008</link>
+      <language>nl-NL</language>
+      <price>74.95 EUR</price>
+      <sale_price>54.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>6</inventory>
+      <brand>Atelier Ode</brand>
+      <color>Charcoal</color>
+      <image_link>https://spotlerik.github.io/shopler/images/AO-M-008.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-008.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/AO-M-008-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-outerwear</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton twill</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>NO-W-001</id>
+      <title>Cropped t-shirt</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-001</link>
+      <language>nl-NL</language>
+      <price>15.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>40</inventory>
+      <brand>Noreen</brand>
+      <color>White</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-001.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-001.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-001-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-tops</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>NO-W-002</id>
+      <title>Bloemen wikkeljurk</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-002</link>
+      <language>nl-NL</language>
+      <price>44.95 EUR</price>
+      <sale_price>29.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>9</inventory>
+      <brand>Noreen</brand>
+      <color>Print</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-002.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-002.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-002-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-dresses</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Viscose</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>NO-W-003</id>
+      <title>High-waist jeans</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-003</link>
+      <language>nl-NL</language>
+      <price>39.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>15</inventory>
+      <brand>Noreen</brand>
+      <color>Mid blue</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-003.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-003.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-003-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-jeans</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Denim</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>NO-W-004</id>
+      <title>Oversized hoodie</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-004</link>
+      <language>nl-NL</language>
+      <price>34.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>3</inventory>
+      <brand>Noreen</brand>
+      <color>Lilac</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-004.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-004.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-004-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-tops</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>NO-W-005</id>
+      <title>Sandalen met bandjes</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-005</link>
+      <language>nl-NL</language>
+      <price>29.95 EUR</price>
+      <sale_price>19.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>11</inventory>
+      <brand>Noreen</brand>
+      <color>Tan</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-005.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-005.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-005-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-shoes</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Synthetic</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>NO-W-006</id>
+      <title>Linnen blouse</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-006</link>
+      <language>nl-NL</language>
+      <price>27.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>20</inventory>
+      <brand>Noreen</brand>
+      <color>Sky</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-006.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-006.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-006-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-tops</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Linen</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>NO-W-007</id>
+      <title>Geplooide minirok</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-007</link>
+      <language>nl-NL</language>
+      <price>24.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>4</inventory>
+      <brand>Noreen</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-007.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-007.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-007-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-skirts</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Polyester</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>NO-W-008</id>
+      <title>Gebreid vest</title>
+      <link>https://spotlerik.github.io/shopler/#/product/NO-W-008</link>
+      <language>nl-NL</language>
+      <price>36.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>14</inventory>
+      <brand>Noreen</brand>
+      <color>Oatmeal</color>
+      <image_link>https://spotlerik.github.io/shopler/images/NO-W-008.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-008.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/NO-W-008-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-knitwear</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton blend</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>KE-M-001</id>
+      <title>Slim-fit jeans</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-001</link>
+      <language>nl-NL</language>
+      <price>44.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>22</inventory>
+      <brand>Kessler</brand>
+      <color>Indigo</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-001.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-001.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-001-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-jeans</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Denim</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>KE-M-002</id>
+      <title>T-shirt met print</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-002</link>
+      <language>nl-NL</language>
+      <price>17.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>35</inventory>
+      <brand>Kessler</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-002.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-002.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-002-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>KE-M-003</id>
+      <title>Hoodie</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-003</link>
+      <language>nl-NL</language>
+      <price>39.95 EUR</price>
+      <sale_price>29.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>8</inventory>
+      <brand>Kessler</brand>
+      <color>Grey marl</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-003.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-003.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-003-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>KE-M-004</id>
+      <title>Field jacket</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-004</link>
+      <language>nl-NL</language>
+      <price>89.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>5</inventory>
+      <brand>Kessler</brand>
+      <color>Khaki</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-004.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-004.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-004-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-outerwear</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>KE-M-005</id>
+      <title>Cargobroek</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-005</link>
+      <language>nl-NL</language>
+      <price>49.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>2</inventory>
+      <brand>Kessler</brand>
+      <color>Sand</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-005.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-005.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-005-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-trousers</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>KE-W-006</id>
+      <title>Boyfriend jeans</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-W-006</link>
+      <language>nl-NL</language>
+      <price>42.95 EUR</price>
+      <sale_price>32.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>13</inventory>
+      <brand>Kessler</brand>
+      <color>Light blue</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-W-006.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-W-006.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-W-006-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-jeans</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Denim</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>KE-M-007</id>
+      <title>Flanellen overshirt</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-007</link>
+      <language>nl-NL</language>
+      <price>34.95 EUR</price>
+      <availability>out of stock</availability>
+      <inventory>0</inventory>
+      <brand>Kessler</brand>
+      <color>Red check</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-007.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-007.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-007-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>KE-M-008</id>
+      <title>Poloshirt</title>
+      <link>https://spotlerik.github.io/shopler/#/product/KE-M-008</link>
+      <language>nl-NL</language>
+      <price>22.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>26</inventory>
+      <brand>Kessler</brand>
+      <color>White</color>
+      <image_link>https://spotlerik.github.io/shopler/images/KE-M-008.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-008.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/KE-M-008-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Piqué cotton</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>LU-W-001</id>
+      <title>Biologisch katoenen tee</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-W-001</link>
+      <language>nl-NL</language>
+      <price>12.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>50</inventory>
+      <brand>Lün</brand>
+      <color>Ecru</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-W-001.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-001.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-001-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-tops</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Organic cotton</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>LU-M-002</id>
+      <title>Heavyweight tee</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-M-002</link>
+      <language>nl-NL</language>
+      <price>14.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>45</inventory>
+      <brand>Lün</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-M-002.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-002.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-002-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Organic cotton</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>LU-U-003</id>
+      <title>Lounge jogger</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-U-003</link>
+      <language>nl-NL</language>
+      <price>29.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>17</inventory>
+      <brand>Lün</brand>
+      <color>Grey</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-U-003.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-U-003.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-U-003-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-loungewear</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>LU-M-004</id>
+      <title>Crew sweater</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-M-004</link>
+      <language>nl-NL</language>
+      <price>27.95 EUR</price>
+      <sale_price>19.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>9</inventory>
+      <brand>Lün</brand>
+      <color>Sage</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-M-004.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-004.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-004-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>LU-W-005</id>
+      <title>Geribde tanktop</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-W-005</link>
+      <language>nl-NL</language>
+      <price>9.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>60</inventory>
+      <brand>Lün</brand>
+      <color>White</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-W-005.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-005.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-005-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-tops</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>LU-U-006</id>
+      <title>Vissershoedje</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-U-006</link>
+      <language>nl-NL</language>
+      <price>16.95 EUR</price>
+      <availability>out of stock</availability>
+      <inventory>0</inventory>
+      <brand>Lün</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-U-006.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-U-006.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-U-006-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-hats</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Cotton</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>LU-W-007</id>
+      <title>Wijde lounge broek</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-W-007</link>
+      <language>nl-NL</language>
+      <price>24.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>19</inventory>
+      <brand>Lün</brand>
+      <color>Taupe</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-W-007.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-007.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-W-007-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>women</category_id>
+        <category_id>women-loungewear</category_id>
+      </category_ids>
+      <gender>f</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>LU-M-008</id>
+      <title>Zip hoodie</title>
+      <link>https://spotlerik.github.io/shopler/#/product/LU-M-008</link>
+      <language>nl-NL</language>
+      <price>32.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>4</inventory>
+      <brand>Lün</brand>
+      <color>Navy</color>
+      <image_link>https://spotlerik.github.io/shopler/images/LU-M-008.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-008.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/LU-M-008-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>men</category_id>
+        <category_id>men-tops</category_id>
+      </category_ids>
+      <gender>m</gender>
+      <material>Cotton blend</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-001</id>
+      <title>Leren-look shopper</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-001</link>
+      <language>nl-NL</language>
+      <price>39.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>12</inventory>
+      <brand>Vossen</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-001.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-001.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-001-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-bags</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>PU leather</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-002</id>
+      <title>Crossbody tas</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-002</link>
+      <language>nl-NL</language>
+      <price>29.95 EUR</price>
+      <sale_price>19.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>7</inventory>
+      <brand>Vossen</brand>
+      <color>Tan</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-002.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-002.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-002-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-bags</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>PU leather</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-003</id>
+      <title>Geweven riem</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-003</link>
+      <language>nl-NL</language>
+      <price>14.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>30</inventory>
+      <brand>Vossen</brand>
+      <color>Brown</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-003.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-003.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-003-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-belts</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Leather</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-004</id>
+      <title>Gebreide muts</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-004</link>
+      <language>nl-NL</language>
+      <price>12.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>2</inventory>
+      <brand>Vossen</brand>
+      <color>Mustard</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-004.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-004.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-004-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-hats</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Acrylic</material>
+      <season>AW</season>
+    </item>
+    <item>
+      <id>VO-A-005</id>
+      <title>Canvas rugzak</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-005</link>
+      <language>nl-NL</language>
+      <price>44.95 EUR</price>
+      <sale_price>34.95 EUR</sale_price>
+      <availability>in stock</availability>
+      <inventory>6</inventory>
+      <brand>Vossen</brand>
+      <color>Olive</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-005.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-005.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-005-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-bags</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Canvas</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-006</id>
+      <title>Zonnebril</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-006</link>
+      <language>nl-NL</language>
+      <price>19.95 EUR</price>
+      <availability>out of stock</availability>
+      <inventory>0</inventory>
+      <brand>Vossen</brand>
+      <color>Tortoise</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-006.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-006.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-006-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-eyewear</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Acetate</material>
+      <season>SS</season>
+    </item>
+    <item>
+      <id>VO-A-007</id>
+      <title>Pasjeshouder</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-007</link>
+      <language>nl-NL</language>
+      <price>11.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>24</inventory>
+      <brand>Vossen</brand>
+      <color>Black</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-007.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-007.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-007-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-small-leather</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>PU leather</material>
+      <season>All</season>
+    </item>
+    <item>
+      <id>VO-A-008</id>
+      <title>Dikke sjaal</title>
+      <link>https://spotlerik.github.io/shopler/#/product/VO-A-008</link>
+      <language>nl-NL</language>
+      <price>18.95 EUR</price>
+      <availability>in stock</availability>
+      <inventory>15</inventory>
+      <brand>Vossen</brand>
+      <color>Burgundy</color>
+      <image_link>https://spotlerik.github.io/shopler/images/VO-A-008.jpg</image_link>
+      <image_links>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-008.jpg</image_link>
+        <image_link>https://spotlerik.github.io/shopler/images/VO-A-008-2.jpg</image_link>
+      </image_links>
+      <category_ids>
+        <category_id>accessories</category_id>
+        <category_id>accessories-scarves</category_id>
+      </category_ids>
+      <gender>u</gender>
+      <material>Acrylic</material>
+      <season>AW</season>
+    </item>
+  </channel>
+</rss>
