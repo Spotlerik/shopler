@@ -61,14 +61,14 @@ h1,h2,h3{font-family:var(--font-display);font-weight:var(--w-semibold);
 .perso-rail{padding:var(--space-12) 0;border-top:1px solid var(--line)}
 
 /* ---------- Hero (full-bleed image, copy overlaid in the negative space) ---------- */
-.hero{position:relative;background:#EAE4DF;overflow:hidden}
-/* The full model (head to feet) must always be visible. `contain` guarantees the
-   whole photo is shown — never cropped — at any viewport. When the box is capped
-   by max-height (wide/short screens) the image scales down and hugs the right, so
-   the model stays fully in frame and the freed space becomes beige matching the
-   photo's own background (set on .hero above), reading as one seamless surface. */
-.hero__bg{width:100%;display:block;aspect-ratio:3200 / 1801;max-height:82vh;
-  object-fit:contain;object-position:right center}
+.hero{position:relative;background:#E2DCD3;overflow:hidden}
+/* Wide panoramic hero. The box takes the photo's own (wide) aspect ratio and is
+   width-driven, so `cover` fills the full width with no letterbox bands — the beige
+   runs edge to edge and continues seamlessly under the hero copy. The model sits on
+   the right and is anchored there, so she stays fully in frame, head to feet, at
+   every viewport width (the empty beige on her left is what gets cropped, if any). */
+.hero__bg{width:100%;display:block;aspect-ratio:3600 / 1524;
+  object-fit:cover;object-position:right center}
 .hero__overlay{position:absolute;inset:0;display:flex;align-items:center;
   background:linear-gradient(90deg,var(--paper) 0%,rgba(247,247,244,.78) 28%,rgba(247,247,244,.32) 48%,transparent 64%)}
 .hero__copy{max-width:var(--container);margin:0 auto;width:100%;padding:0 var(--space-12)}
