@@ -61,12 +61,14 @@ h1,h2,h3{font-family:var(--font-display);font-weight:var(--w-semibold);
 .perso-rail{padding:var(--space-12) 0;border-top:1px solid var(--line)}
 
 /* ---------- Hero (full-bleed image, copy overlaid in the negative space) ---------- */
-.hero{position:relative;background:var(--surface-sunken);overflow:hidden}
-/* Box keeps the photo's own aspect ratio, so on normal screens the full model
-   (head to feet) is shown without cropping. Only on very tall/ultrawide viewports
-   does max-height cap it; then the crop is biased to the top so the head stays. */
-.hero__bg{width:100%;display:block;aspect-ratio:1672 / 941;max-height:82vh;
-  object-fit:cover;object-position:72% top}
+.hero{position:relative;background:#EAE4DF;overflow:hidden}
+/* The full model (head to feet) must always be visible. `contain` guarantees the
+   whole photo is shown — never cropped — at any viewport. When the box is capped
+   by max-height (wide/short screens) the image scales down and hugs the right, so
+   the model stays fully in frame and the freed space becomes beige matching the
+   photo's own background (set on .hero above), reading as one seamless surface. */
+.hero__bg{width:100%;display:block;aspect-ratio:3200 / 1801;max-height:82vh;
+  object-fit:contain;object-position:right center}
 .hero__overlay{position:absolute;inset:0;display:flex;align-items:center;
   background:linear-gradient(90deg,var(--paper) 0%,rgba(247,247,244,.78) 28%,rgba(247,247,244,.32) 48%,transparent 64%)}
 .hero__copy{max-width:var(--container);margin:0 auto;width:100%;padding:0 var(--space-12)}
@@ -74,7 +76,7 @@ h1,h2,h3{font-family:var(--font-display);font-weight:var(--w-semibold);
 .hero__copy h1{font-size:var(--text-display);letter-spacing:var(--track-tight);text-wrap:balance;margin:var(--space-3) 0 var(--space-5)}
 .hero__copy p{color:var(--ink-soft);font-size:var(--text-md);max-width:38ch;margin:0 0 var(--space-8)}
 @media(max-width:760px){
-  .hero__bg{aspect-ratio:auto;height:64vh;max-height:none;object-position:72% top}
+  .hero__bg{aspect-ratio:auto;height:64vh;max-height:none;object-fit:cover;object-position:78% center}
   .hero__overlay{align-items:flex-end;
     background:linear-gradient(0deg,var(--paper) 8%,rgba(247,247,244,.82) 34%,rgba(247,247,244,.1) 62%,transparent 78%)}
   .hero__copy{padding:var(--space-12) var(--space-6)}
