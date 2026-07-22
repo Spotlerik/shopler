@@ -38,7 +38,7 @@
     .hdr__actions{display:flex;align-items:center;gap:var(--space-4);flex:0 0 auto}
     .lang{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-pill);overflow:hidden}
     .lang button{background:transparent;border:0;padding:var(--space-1) var(--space-3);font-size:var(--text-xs);
-      font-weight:var(--w-semibold);text-transform:uppercase;color:var(--stone-600);cursor:default}
+      font-weight:var(--w-semibold);text-transform:uppercase;color:var(--stone-600);cursor:pointer}
     .lang button.is-active{background:var(--ink);color:var(--paper)}
     .icon-btn{position:relative;background:transparent;border:0;display:flex;align-items:center;padding:var(--space-1)}
     .icon-btn svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.6}
@@ -58,7 +58,6 @@
       background:var(--accent-tint);color:var(--stone-600)}
     .media .ph b{font-size:var(--text-xs);letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--stone-400)}
     .media .ph span{font-family:var(--font-display);font-weight:var(--w-semibold);color:var(--ink-soft)}
-    /* Soldout wash on the gallery — quiet, not alarming */
     .pdp.is-sold .media{filter:saturate(.92)}
     .soldout-flag{position:absolute;top:var(--space-3);left:var(--space-3);z-index:2;
       font-size:var(--text-xs);letter-spacing:var(--track-caps);text-transform:uppercase;font-weight:var(--w-semibold);
@@ -79,7 +78,7 @@
     .meta dl{display:grid;grid-template-columns:130px 1fr;gap:var(--space-2) var(--space-4);margin:0;color:var(--ink-soft)}
     .meta dt{color:var(--stone-400)}
 
-    /* ---------- Sizes (shown unavailable when sold out) ---------- */
+    /* ---------- Sizes ---------- */
     .sizes{margin:var(--space-5) 0}
     .sizes__label{display:flex;justify-content:space-between;font-size:var(--text-sm);color:var(--ink-soft);margin-bottom:var(--space-3)}
     .sizes__note{color:var(--accent);font-weight:var(--w-semibold)}
@@ -98,9 +97,7 @@
     .btn[disabled]{opacity:.4;cursor:not-allowed;background:var(--stone-400);border-color:var(--stone-400)}
     .btn--block{width:100%}
 
-    /* ---------- Back-in-stock notify panel (the scene-2 moment) ----------
-       Inline, calm; starts hidden and reveals ~1.2s after render to show
-       Activate capturing interest the moment the item is out of stock. */
+    /* ---------- Back-in-stock notify panel (the scene-2 moment) ---------- */
     .notify{margin-top:var(--space-6);border:1px solid var(--line);border-radius:var(--r-lg);
       background:var(--surface);box-shadow:var(--shadow-sm);padding:var(--space-6);
       opacity:0;transform:translateY(14px);pointer-events:none;
@@ -148,18 +145,18 @@
         </svg>
         <span class="wm">Shopler</span>
       </a>
-      <nav class="nav" aria-label="Hoofdmenu">
-        <a href="#">Dames</a>
-        <a href="#">Heren</a>
-        <a href="#">Accessoires</a>
-        <a href="#" class="is-sale">Sale</a>
+      <nav class="nav" id="nav" aria-label="Hoofdmenu">
+        <a href="#" id="nav-women">Dames</a>
+        <a href="#" id="nav-men">Heren</a>
+        <a href="#" id="nav-acc">Accessoires</a>
+        <a href="#" id="nav-sale" class="is-sale">Sale</a>
       </nav>
       <div class="hdr__actions">
-        <div class="lang" role="group" aria-label="Taal">
-          <button>EN</button>
-          <button class="is-active" aria-pressed="true">NL</button>
+        <div class="lang" id="lang" role="group" aria-label="Taal">
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="nl" class="is-active" aria-pressed="true">NL</button>
         </div>
-        <button class="icon-btn" aria-label="Winkelmand">
+        <button class="icon-btn" id="bag" aria-label="Winkelmand">
           <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
           <span class="count">1</span>
         </button>
@@ -168,180 +165,234 @@
   </header>
 
   <main class="wrap">
-    <nav class="breadcrumb" id="breadcrumb">Heren</nav>
-    <section id="pdp" class="pdp" aria-label="Productpagina"><!-- injected --></section>
+    <nav class="breadcrumb" id="breadcrumb"></nav>
+    <section id="pdp" class="pdp" aria-label="Productpagina">
+      <div class="pdp__gallery" id="gallery"><!-- built once (images are language-independent) --></div>
+      <div class="pdp__info" id="info"><!-- re-rendered per language --></div>
+    </section>
   </main>
 
   <script>
   (function () {
-    /* ==== Config — featured product & notify copy ==================== */
-    var LANGUAGE  = "nl-NL";
+    /* ==== Config — featured product & default language =============== */
     var HERO_SKU  = "KE-M-007";      // genuinely out of stock in the feed
     var FORCE_SOLD_OUT = true;       // always show sold-out for the film, even if restocked
-    var NOTIFY_HEADLINE    = "Weer op voorraad? Ik laat het je weten.";
-    var NOTIFY_TEXT        = "Vul je e-mailadres in — je krijgt automatisch bericht zodra dit item weer beschikbaar is. Zo hoef je niet zelf terug te komen om te kijken.";
-    var NOTIFY_BUTTON      = "Houd me op de hoogte";
-    var NOTIFY_PLACEHOLDER = "E-mailadres";
-    var NOTIFY_SUCCESS_LEAD = "Gelukt, je staat op de lijst.";
-    var NOTIFY_SUCCESS_SUB  = "Je krijgt een e-mail zodra dit item weer op voorraad is.";
-    var NOTIFY_PRIVACY     = "Geen spam. Alleen een berichtje als dit item terug is.";
+    var DEFAULT_LANG = "nl";         // "nl" | "en" — which toggle is active on load
     /* ================================================================= */
 
-    var FEED_URL = "../activate-feed.json";
-    var SEASON = { AW: "Herfst / Winter", SS: "Lente / Zomer", All: "Alle seizoenen" };
-    var CAT_NL = { Women: "Dames", Men: "Heren", Accessories: "Accessoires", Sale: "Sale" };
-    var SIZES = ["XS", "S", "M", "L", "XL"];
-
-    function esc(s) {
-      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c];
-      });
-    }
-    function seasonLabel(s) { return SEASON[s] || s || ""; }
-    function soldOut(p) { return FORCE_SOLD_OUT || !p.in_stock || !(p.stock > 0); }
-    function stockLine(p) {
-      if (soldOut(p)) return { txt: "Uitverkocht", cls: "stock--sold" };
-      if (p.stock > 0 && p.stock <= 3) return { txt: "Nog maar " + p.stock + " beschikbaar", cls: "stock--low" };
-      return { txt: "Op voorraad", cls: "stock--in" };
-    }
-
-    function mediaCell(p, which) {
-      var src = which === "lifestyle" ? p.image_lifestyle : p.image;
-      var ph = '<div class="ph"><b>' + esc(p.brand) + '</b><span>' + esc(p.name) + '</span></div>';
-      var img = src ? '<img src="' + esc(src) + '" alt="' + esc(p.name) +
-        '" onerror="this.style.display=\'none\'">' : "";
-      return ph + img;
-    }
-
-    function renderPDP(p, sku) {
-      var pdp = document.getElementById("pdp");
-      if (!p) { // missing SKU → tasteful placeholder, no error
-        pdp.innerHTML = '<div class="pdp__gallery">' +
-          '<div class="media"><div class="ph"><b></b><span>' + esc(sku) + '</span></div></div>' +
-          '<div class="media"><div class="ph"><b></b><span>' + esc(sku) + '</span></div></div></div>' +
-          '<div class="pdp__info"><div class="pdp__brand"></div><h1>' + esc(sku) + '</h1></div>';
-        return;
+    // All UI copy per language. `low(n)` builds the low-stock line.
+    var COPY = {
+      nl: {
+        nav:{women:"Dames",men:"Heren",acc:"Accessoires",sale:"Sale"},
+        colour:"Kleur", size:"Maat", sizeOut:"Niet op voorraad",
+        addToBag:"In winkelmand", soldBtn:"Uitverkocht", soldFlag:"Uitverkocht",
+        inStock:"Op voorraad", low:function(n){return "Nog maar "+n+" beschikbaar";}, sold:"Uitverkocht",
+        desc:"Bewust gemaakt, om te dragen — niet alleen om te zien.",
+        material:"Materiaal", season:"Seizoen",
+        seasons:{AW:"Herfst / Winter",SS:"Lente / Zomer",All:"Alle seizoenen"},
+        notifyEyebrow:"Voorraadmelding",
+        notifyHeadline:"Weer op voorraad? Ik laat het je weten.",
+        notifyText:"Vul je e-mailadres in — je krijgt automatisch bericht zodra dit item weer beschikbaar is. Zo hoef je niet zelf terug te komen om te kijken.",
+        notifyButton:"Houd me op de hoogte", notifyPlaceholder:"E-mailadres",
+        notifyErr:"Vul een geldig e-mailadres in.",
+        notifyOk:"Gelukt, je staat op de lijst.", notifyOkSub:"Je krijgt een e-mail zodra dit item weer op voorraad is.",
+        notifyPrivacy:"Geen spam. Alleen een berichtje als dit item terug is.",
+        aria:{menu:"Hoofdmenu",lang:"Taal",bag:"Winkelmand",product:"Productpagina",notify:"Voorraadmelding"},
+        title:"Shopler — Uitverkocht"
+      },
+      en: {
+        nav:{women:"Women",men:"Men",acc:"Accessories",sale:"Sale"},
+        colour:"Colour", size:"Size", sizeOut:"Out of stock",
+        addToBag:"Add to bag", soldBtn:"Sold out", soldFlag:"Sold out",
+        inStock:"In stock", low:function(n){return "Only "+n+" left";}, sold:"Sold out",
+        desc:"Considered essentials, made to be worn — not just seen.",
+        material:"Material", season:"Season",
+        seasons:{AW:"Autumn / Winter",SS:"Spring / Summer",All:"All season"},
+        notifyEyebrow:"Back in stock",
+        notifyHeadline:"Back in stock? I'll let you know.",
+        notifyText:"Leave your email — we'll message you automatically as soon as this item is available again. No need to keep checking back yourself.",
+        notifyButton:"Notify me", notifyPlaceholder:"Email address",
+        notifyErr:"Please enter a valid email address.",
+        notifyOk:"Done — you're on the list.", notifyOkSub:"We'll email you as soon as this item is back in stock.",
+        notifyPrivacy:"No spam. Just a note when this item returns.",
+        aria:{menu:"Main menu",lang:"Language",bag:"Bag",product:"Product page",notify:"Back-in-stock alert"},
+        title:"Shopler — Sold out"
       }
-      var sold = soldOut(p);
-      if (sold) pdp.classList.add("is-sold");
-      var st = stockLine(p);
+    };
+    var LANG_CODE = { nl: "nl-NL", en: "en-GB" };
+    var CAT = {
+      nl:{Women:"Dames",Men:"Heren",Accessories:"Accessoires",Sale:"Sale"},
+      en:{Women:"Women",Men:"Men",Accessories:"Accessories",Sale:"Sale"}
+    };
+    var SIZES = ["XS","S","M","L","XL"];
 
-      // breadcrumb from feed category/subcategory
-      var catNL = CAT_NL[p.category] || p.category || "";
-      document.getElementById("breadcrumb").textContent =
-        [catNL, p.subcategory].filter(Boolean).join(" / ");
+    var byLang = { nl:{}, en:{} };            // {lang: {id: feedRow}}
+    var state = { lang: DEFAULT_LANG, revealed:false, done:false };
 
-      // sizes shown as unavailable when sold out
-      var sizeOut = sold;
-      var sizeOpts = SIZES.map(function (s) {
-        return '<button class="size-opt' + (sizeOut ? " is-out" : "") + '" type="button" tabindex="-1"' +
-          (sizeOut ? ' aria-disabled="true"' : "") + '>' + esc(s) + '</button>';
-      }).join("");
+    function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c];});}
+    function product(lang){ return byLang[lang][HERO_SKU] || byLang[lang==="nl"?"en":"nl"][HERO_SKU] || null; }
+    function soldOut(p){ return FORCE_SOLD_OUT || !p.in_stock || !(p.stock>0); }
 
-      pdp.innerHTML =
-        '<div class="pdp__gallery">' +
-          '<div class="media">' + (sold ? '<span class="soldout-flag">Uitverkocht</span>' : "") + mediaCell(p, "lifestyle") + '</div>' +
-          '<div class="media">' + mediaCell(p, "image") + '</div>' +
-        '</div>' +
-        '<div class="pdp__info">' +
-          '<div class="pdp__brand">' + esc(p.brand) + '</div>' +
-          '<h1>' + esc(p.name) + '</h1>' +
-          '<p class="pdp__desc">Bewust gemaakt, om te dragen — niet alleen om te zien.</p>' +
-          '<div class="pdp__colour">Kleur: <b>' + esc(p.color) + '</b></div>' +
-          '<div class="sizes">' +
-            '<div class="sizes__label"><span>Maat</span>' +
-              (sizeOut ? '<span class="sizes__note">Niet op voorraad</span>' : '') + '</div>' +
-            '<div class="sizes__opts">' + sizeOpts + '</div>' +
-          '</div>' +
-          '<button class="btn btn--block" type="button"' + (sold ? " disabled" : "") + '>' +
-            (sold ? "Uitverkocht" : "In winkelmand") + '</button>' +
-          '<div class="stock ' + st.cls + '">' + esc(st.txt) + '</div>' +
+    // Gallery is language-independent (same images per SKU) — build it once.
+    function renderGallery(p){
+      var g = document.getElementById("gallery");
+      if (!p){ g.innerHTML = cell(null,HERO_SKU) + cell(null,HERO_SKU); return; }
+      var flag = soldOut(p) ? '<span class="soldout-flag" data-sold-flag></span>' : "";
+      g.innerHTML =
+        '<div class="media">' + flag + imgCell(p,"lifestyle") + '</div>' +
+        '<div class="media">' + imgCell(p,"image") + '</div>';
+      if (soldOut(p)) document.getElementById("pdp").classList.add("is-sold");
+    }
+    function imgCell(p,which){
+      var src = which==="lifestyle" ? p.image_lifestyle : p.image;
+      var ph = '<div class="ph"><b>'+esc(p.brand)+'</b><span>'+esc(p.name)+'</span></div>';
+      return ph + (src ? '<img src="'+esc(src)+'" alt="'+esc(p.name)+'" onerror="this.style.display=\'none\'">' : "");
+    }
+    function cell(p,sku){ return '<div class="media"><div class="ph"><b></b><span>'+esc(sku)+'</span></div></div>'; }
 
-          // ---- Back-in-stock capture ----
-          (sold ? notifyHTML() : "") +
-
-          '<div class="meta"><dl>' +
-            '<dt>Materiaal</dt><dd>' + esc(p.material) + '</dd>' +
-            '<dt>Seizoen</dt><dd>' + esc(seasonLabel(p.season)) + '</dd>' +
-          '</dl></div>' +
-        '</div>';
-
-      if (sold) setupNotify();
+    function stockLine(p,c){
+      if (soldOut(p)) return {txt:c.sold, cls:"stock--sold"};
+      if (p.stock>0 && p.stock<=3) return {txt:c.low(p.stock), cls:"stock--low"};
+      return {txt:c.inStock, cls:"stock--in"};
     }
 
-    function notifyHTML() {
-      return '<section class="notify" id="notify" aria-label="Voorraadmelding">' +
+    // Info column (incl. notify) — re-rendered on language change.
+    function renderInfo(lang){
+      var c = COPY[lang], p = product(lang), info = document.getElementById("info");
+      if (!p){ info.innerHTML = '<div class="pdp__brand"></div><h1>'+esc(HERO_SKU)+'</h1>'; return; }
+      var sold = soldOut(p), st = stockLine(p,c);
+      var sizeOpts = SIZES.map(function(s){
+        return '<button class="size-opt'+(sold?" is-out":"")+'" type="button" tabindex="-1"'+
+          (sold?' aria-disabled="true"':"")+'>'+esc(s)+'</button>';
+      }).join("");
+      info.innerHTML =
+        '<div class="pdp__brand">'+esc(p.brand)+'</div>' +
+        '<h1>'+esc(p.name)+'</h1>' +
+        '<p class="pdp__desc">'+esc(c.desc)+'</p>' +
+        '<div class="pdp__colour">'+esc(c.colour)+': <b>'+esc(p.color)+'</b></div>' +
+        '<div class="sizes">' +
+          '<div class="sizes__label"><span>'+esc(c.size)+'</span>'+
+            (sold?'<span class="sizes__note">'+esc(c.sizeOut)+'</span>':'')+'</div>' +
+          '<div class="sizes__opts">'+sizeOpts+'</div>' +
+        '</div>' +
+        '<button class="btn btn--block" type="button"'+(sold?" disabled":"")+'>'+esc(sold?c.soldBtn:c.addToBag)+'</button>' +
+        '<div class="stock '+st.cls+'">'+esc(st.txt)+'</div>' +
+        (sold ? notifyHTML(c) : "") +
+        '<div class="meta"><dl>' +
+          '<dt>'+esc(c.material)+'</dt><dd>'+esc(p.material)+'</dd>' +
+          '<dt>'+esc(c.season)+'</dt><dd>'+esc((c.seasons[p.season]||p.season||""))+'</dd>' +
+        '</dl></div>';
+      if (sold) { setupNotify(c); restoreNotifyState(); }
+    }
+
+    function notifyHTML(c){
+      return '<section class="notify" id="notify" aria-label="'+esc(c.aria.notify)+'">' +
         '<div class="notify__form">' +
           '<span class="notify__eyebrow">' +
             '<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>' +
-            'Voorraadmelding</span>' +
-          '<h2 id="notify-title"></h2>' +
-          '<p class="lead" id="notify-text"></p>' +
+            esc(c.notifyEyebrow)+'</span>' +
+          '<h2>'+esc(c.notifyHeadline)+'</h2>' +
+          '<p class="lead">'+esc(c.notifyText)+'</p>' +
           '<form id="notify-form" novalidate>' +
-            '<label class="sr-only" for="notify-email">' + esc(NOTIFY_PLACEHOLDER) + '</label>' +
-            '<input id="notify-email" type="email" name="email" placeholder="" autocomplete="email" required aria-describedby="notify-err">' +
-            '<button class="btn" type="submit" id="notify-btn"></button>' +
+            '<label class="sr-only" for="notify-email">'+esc(c.notifyPlaceholder)+'</label>' +
+            '<input id="notify-email" type="email" name="email" placeholder="'+esc(c.notifyPlaceholder)+'" autocomplete="email" required aria-describedby="notify-err">' +
+            '<button class="btn" type="submit">'+esc(c.notifyButton)+'</button>' +
           '</form>' +
           '<p class="err" id="notify-err" role="alert"></p>' +
-          '<p class="notify__privacy" id="notify-privacy"></p>' +
+          '<p class="notify__privacy">'+esc(c.notifyPrivacy)+'</p>' +
         '</div>' +
         '<div class="notify__done" aria-live="polite">' +
           '<span class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>' +
-          '<p><b id="notify-ok"></b><span id="notify-ok-sub"></span></p>' +
+          '<p><b>'+esc(c.notifyOk)+'</b><span>'+esc(c.notifyOkSub)+'</span></p>' +
         '</div>' +
       '</section>';
     }
 
-    function setupNotify() {
-      document.getElementById("notify-title").textContent = NOTIFY_HEADLINE;
-      document.getElementById("notify-text").textContent = NOTIFY_TEXT;
-      document.getElementById("notify-btn").textContent = NOTIFY_BUTTON;
-      document.getElementById("notify-email").setAttribute("placeholder", NOTIFY_PLACEHOLDER);
-      document.getElementById("notify-privacy").textContent = NOTIFY_PRIVACY;
-      document.getElementById("notify-ok").textContent = NOTIFY_SUCCESS_LEAD;
-      document.getElementById("notify-ok-sub").textContent = NOTIFY_SUCCESS_SUB;
-
-      var box = document.getElementById("notify");
+    function setupNotify(c){
       var form = document.getElementById("notify-form");
+      if (!form) return;
+      var box = document.getElementById("notify");
       var input = document.getElementById("notify-email");
       var err = document.getElementById("notify-err");
-      form.addEventListener("submit", function (e) {
+      form.addEventListener("submit", function(e){
         e.preventDefault();
         var val = input.value.trim();
         var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); // front-end only; nothing is sent
-        if (!ok) { err.textContent = "Vul een geldig e-mailadres in."; input.focus(); return; }
-        err.textContent = "";
-        box.classList.add("is-done");
+        if (!ok){ err.textContent = c.notifyErr; input.focus(); return; }
+        err.textContent = ""; state.done = true; box.classList.add("is-done");
       });
     }
 
-    // Reveal the notify panel ~1.2s after render (subtle; illustrates Activate).
-    function revealNotify() {
+    // Reapply reveal/submitted state after a re-render (no re-animation on toggle).
+    function restoreNotifyState(){
       var box = document.getElementById("notify");
       if (!box) return;
+      if (state.done) box.classList.add("is-done");
+      if (state.revealed){
+        box.style.transition = "none"; box.classList.add("is-in");
+        void box.offsetWidth; box.style.transition = "";
+      }
+    }
+
+    function renderChrome(lang){
+      var c = COPY[lang];
+      document.documentElement.lang = lang;
+      document.title = c.title;
+      document.getElementById("nav-women").textContent = c.nav.women;
+      document.getElementById("nav-men").textContent = c.nav.men;
+      document.getElementById("nav-acc").textContent = c.nav.acc;
+      document.getElementById("nav-sale").textContent = c.nav.sale;
+      document.getElementById("nav").setAttribute("aria-label", c.aria.menu);
+      document.getElementById("lang").setAttribute("aria-label", c.aria.lang);
+      document.getElementById("bag").setAttribute("aria-label", c.aria.bag);
+      document.getElementById("pdp").setAttribute("aria-label", c.aria.product);
+      // sold-out flag on the gallery (built once, so its text is set per language here)
+      var flagEl = document.querySelector(".soldout-flag");
+      if (flagEl) flagEl.textContent = c.soldFlag;
+      // keep the gallery placeholder label (shown only if an image fails) in the current language
+      var pg = product(lang);
+      if (pg) [].forEach.call(document.querySelectorAll("#gallery .ph span"), function(sp){ sp.textContent = pg.name; });
+      // breadcrumb from feed category/subcategory, localised category label
+      var p = product(lang);
+      var cat = p ? (CAT[lang][p.category] || p.category || "") : "";
+      document.getElementById("breadcrumb").textContent = p ? [cat, p.subcategory].filter(Boolean).join(" / ") : "";
+      // active toggle
+      [].forEach.call(document.querySelectorAll("#lang button"), function(b){
+        var on = b.getAttribute("data-lang") === lang;
+        b.classList.toggle("is-active", on);
+        if (on) b.setAttribute("aria-pressed","true"); else b.removeAttribute("aria-pressed");
+      });
+    }
+
+    function applyLang(lang){ state.lang = lang; renderChrome(lang); renderInfo(lang); }
+
+    function init(){
+      // Toggle wiring
+      [].forEach.call(document.querySelectorAll("#lang button"), function(b){
+        b.addEventListener("click", function(){ applyLang(b.getAttribute("data-lang")); });
+      });
+      var p0 = product(state.lang);
+      renderGallery(p0);
+      applyLang(state.lang);
+      // Reveal the notify panel ~1.2s after first render (subtle; illustrates Activate).
       var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) { box.classList.add("is-in"); return; }
-      setTimeout(function () { requestAnimationFrame(function () { box.classList.add("is-in"); }); }, 1200);
+      function reveal(){ state.revealed = true; var box=document.getElementById("notify"); if(box) box.classList.add("is-in"); }
+      if (reduce) reveal(); else setTimeout(reveal, 1200);
     }
 
-    function build(byId) {
-      renderPDP(byId[HERO_SKU] || null, HERO_SKU);
-      revealNotify();
-    }
-
-    fetch(FEED_URL)
-      .then(function (r) { if (!r.ok) throw new Error("feed " + r.status); return r.json(); })
-      .then(function (rows) {
-        var byId = {};
-        (rows || []).forEach(function (row) {
-          if (!row || !row.id) return;
-          var lang = row.language || "";
-          var isDutch = lang === LANGUAGE || /^nl(\b|[-_])/i.test(lang);
-          if (isDutch && !byId[row.id]) byId[row.id] = row;
+    fetch("../activate-feed.json")
+      .then(function(r){ if(!r.ok) throw new Error("feed "+r.status); return r.json(); })
+      .then(function(rows){
+        (rows||[]).forEach(function(row){
+          if(!row||!row.id) return;
+          var l = row.language||"";
+          if (/^nl(\b|[-_])/i.test(l) && !byLang.nl[row.id]) byLang.nl[row.id]=row;
+          else if (/^en(\b|[-_])/i.test(l) && !byLang.en[row.id]) byLang.en[row.id]=row;
         });
-        build(byId);
+        init();
       })
-      .catch(function () { build({}); }); // feed down → placeholder, never errors
+      .catch(function(){ init(); }); // feed down → placeholders, never errors
   })();
   </script>
 </body>
