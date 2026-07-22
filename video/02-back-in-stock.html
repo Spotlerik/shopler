@@ -65,7 +65,7 @@
 
     /* ---------- PDP ---------- */
     .pdp{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--space-12);padding-top:var(--space-6)}
-    .pdp__gallery{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+    .pdp__gallery{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
     .pdp__brand{font-size:var(--text-sm);letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--stone-600)}
     .pdp__info h1{font-family:var(--font-display);font-weight:var(--w-bold);letter-spacing:var(--track-snug);
       font-size:var(--text-xl);margin:var(--space-2) 0}
@@ -130,7 +130,7 @@
     @media(max-width:760px){
       .nav{display:none}
       .pdp{grid-template-columns:1fr;gap:var(--space-8)}
-      .pdp__gallery{grid-template-columns:1fr 1fr}
+      .pdp__gallery{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -237,11 +237,10 @@
     // Gallery is language-independent (same images per SKU) — build it once.
     function renderGallery(p){
       var g = document.getElementById("gallery");
-      if (!p){ g.innerHTML = cell(null,HERO_SKU) + cell(null,HERO_SKU); return; }
+      if (!p){ g.innerHTML = cell(null,HERO_SKU); return; }
       var flag = soldOut(p) ? '<span class="soldout-flag" data-sold-flag></span>' : "";
-      g.innerHTML =
-        '<div class="media">' + flag + imgCell(p,"lifestyle") + '</div>' +
-        '<div class="media">' + imgCell(p,"image") + '</div>';
+      // Single image only — use the lifestyle shot (the packshot in the feed is unrelated).
+      g.innerHTML = '<div class="media">' + flag + imgCell(p,"lifestyle") + '</div>';
       if (soldOut(p)) document.getElementById("pdp").classList.add("is-sold");
     }
     function imgCell(p,which){
