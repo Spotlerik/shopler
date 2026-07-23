@@ -1110,11 +1110,21 @@
   function render() {
     var parts = parse();
     var html, app = document.getElementById("app");
+    // Hidden, unlisted sales-demo routes (not linked from nav/footer/home). Route-scoped
+    // noindex keeps them out of search without deindexing the rest of the shop.
+    var isDemo = (parts[0] === "usecase" || parts[0] === "usecases");
+    (function (no) {
+      var m = document.getElementById("demo-noindex");
+      if (no && !m) { m = document.createElement("meta"); m.id = "demo-noindex"; m.name = "robots"; m.content = "noindex,nofollow"; document.head.appendChild(m); }
+      else if (!no && m) { m.parentNode.removeChild(m); }
+    })(isDemo);
     if (parts[0] === "c" && parts[1]) html = viewListing(parts[1]);
     else if (parts[0] === "product" && parts[1]) html = viewProduct(parts[1]);
     else if (parts[0] === "checkout") html = viewCheckout();
     else if (parts[0] === "confirmation") html = viewConfirmation();
     else if (parts[0] === "admin") html = viewAdmin();
+    else if (parts[0] === "usecases") html = renderUseCaseIndex();
+    else if (parts[0] === "usecase" && parts[1]) html = renderUseCaseDemo(parts[1]);
     else html = viewHome();
     app.innerHTML = html;
     renderChrome();
@@ -1272,6 +1282,346 @@
   document.getElementById("scrim").addEventListener("click", closeDrawer);
   window.addEventListener("hashchange", render);
 
+  /* ============================================================================
+     HIDDEN Spotler Activate use-case demo pages (sales tool, unlisted).
+     ----------------------------------------------------------------------------
+     Routes #/usecase/:id (one per use case) and the #/usecases index. NOT linked
+     from nav / footer / homepage — reachable only by direct URL. One data-driven
+     template: every page pulls its name / hook / benchmark / example / problem /
+     "what to point at" from window.USE_CASES (mirror of use_cases.json). The stage
+     map below is presentation only (which realistic shop surface + which artefact);
+     no use-case copy, numbers or capabilities are hand-typed here.
+     ========================================================================== */
+  var UC = (window.USE_CASES || []);
+  var UC_BY_ID = {}; UC.forEach(function (u) { UC_BY_ID[u.id] = u; });
+  var UC_ORDER = UC.map(function (u) { return u.id; });
+  var currentDemoId = null, demoState = {};
+
+  function ucBenchmark(u) { var m = u.metrics && u.metrics.commerce; return m ? (m.value + " " + m.label + (m.context ? " " + m.context : "")) : ""; }
+  function ucExample(u) { return (u.examples && u.examples.commerce) || u.blurb || ""; }
+
+  // Real-catalogue pickers, so every surface looks like the actual shop.
+  function byPop(n) { return PRODUCTS.slice().sort(function (a, b) { return b.popularity - a.popularity; }).slice(0, n || 8); }
+  function bySale(n) { return PRODUCTS.filter(function (p) { return p.sale_price_eur != null; }).slice(0, n || 4); }
+  function lowStockOne() { return PRODUCTS.filter(function (p) { return p.stock > 0 && p.stock <= 4; })[0] || PRODUCTS.filter(function (p) { return p.stock > 0; }).slice(-1)[0] || PRODUCTS[0]; }
+  function soldOutOne() { return PRODUCTS.filter(function (p) { return p.stock === 0; })[0] || lowStockOne(); }
+  function similarTo(p, n) {
+    var out = (p.pairs_with || []).map(function (s) { return BY_SKU[s]; }).filter(Boolean);
+    PRODUCTS.forEach(function (q) { if (out.length < (n || 4) && q.sku !== p.sku && q.category === p.category && out.indexOf(q) < 0) out.push(q); });
+    return out.slice(0, n || 4);
+  }
+  function firstName() { return "Sarah"; } // demo persona for recognised-visitor surfaces
+
+  /* ---------- reusable demo surfaces (Shopler components + styles) ---------- */
+  function demoHero(eyebrow, headline, sub, cta) {
+    return '<section class="hero demo-hero">' +
+      '<img class="hero__bg" src="' + esc(img("hero.webp")) + '" alt="">' +
+      '<div class="hero__overlay"><div class="hero__copy"><div class="inner">' +
+        (eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + '</p>' : "") +
+        '<h1>' + esc(headline) + '</h1>' +
+        (sub ? '<p>' + esc(sub) + '</p>' : "") +
+        (cta ? '<a class="btn" href="#/c/women">' + esc(cta) + '</a>' : "") +
+      '</div></div></div>' +
+    '</section>';
+  }
+  function demoRail(heading, products) {
+    return '<section class="section demo-injected">' +
+      '<div class="section__head"><h2>' + esc(heading) + '</h2>' +
+        '<span class="demo-tag">Personalised by Activate</span></div>' +
+      gridHTML(products) +
+    '</section>';
+  }
+  function demoPDP(p, injectHTML) {
+    var st = stockState(p);
+    var stockTxt = st === "sold" ? t("sold_out") : st === "low" ? t("only_left", { n: p.stock }) : "";
+    return '<div class="wrap demo-pdp"><div class="pdp">' +
+      '<div class="pdp__media"><img src="' + esc(img(p.image_lifestyle)) + '" alt="' + esc(name(p)) + '"></div>' +
+      '<div class="pdp__info">' +
+        '<div class="pdp__brand">' + esc(p.brand) + '</div>' +
+        '<h1 class="pdp__name">' + esc(name(p)) + '</h1>' +
+        priceHTML(p, true) +
+        (injectHTML || "") +
+        (stockTxt ? '<p class="pdp__stock">' + esc(stockTxt) + '</p>' : "") +
+        '<button class="btn btn--block" style="margin-top:var(--space-4)">' + esc(t("add_to_cart") || "Add to cart") + '</button>' +
+        '<div class="perso-slot" data-activate="pdp-social"></div>' +
+      '</div>' +
+    '</div></div>';
+  }
+  function emailPreview(u, bodyHTML) {
+    return '<div class="wrap"><div class="demo-frame demo-email">' +
+      '<div class="demo-frame__bar"><span class="demo-frame__dot"></span><span class="demo-frame__dot"></span><span class="demo-frame__dot"></span>' +
+        '<span class="demo-frame__label">Email preview</span></div>' +
+      '<div class="demo-email__head">' +
+        '<div class="demo-email__from"><span class="demo-email__avatar">S</span><div><strong>Shopler</strong><span>hello@shopler.example</span></div></div>' +
+        '<div class="demo-email__subject">' + esc(u.hook) + '</div>' +
+        '<div class="demo-email__pre">' + esc(ucExample(u)) + '</div>' +
+      '</div>' +
+      '<div class="demo-email__body">' + bodyHTML + '</div>' +
+    '</div></div>';
+  }
+  function emailProductRow(products) {
+    return '<div class="demo-email__grid">' + products.map(function (p) {
+      return '<a class="demo-eprod" href="#/product/' + esc(p.sku) + '">' +
+        '<img src="' + esc(img(p.image)) + '" alt="">' +
+        '<div class="demo-eprod__brand">' + esc(p.brand) + '</div>' +
+        '<div class="demo-eprod__name">' + esc(name(p)) + '</div>' +
+        '<div class="demo-eprod__price">' + priceHTML(p) + '</div></a>';
+    }).join("") + '</div>';
+  }
+  function adPreview(u, products) {
+    return '<div class="wrap"><div class="demo-frame demo-ad">' +
+      '<div class="demo-frame__bar"><span class="demo-frame__label">Retargeting ad preview · Sponsored</span></div>' +
+      '<div class="demo-ad__card">' +
+        '<div class="demo-ad__head"><span class="demo-ad__avatar">S</span><div><strong>Shopler</strong><span class="demo-ad__sponsored">Sponsored</span></div></div>' +
+        '<div class="demo-ad__copy">' + esc(u.hook) + '</div>' +
+        '<div class="demo-ad__row">' + products.slice(0, 3).map(function (p) {
+          return '<div class="demo-ad__item"><img src="' + esc(img(p.image_lifestyle)) + '" alt=""><span>' + esc(name(p)) + '</span></div>';
+        }).join("") + '</div>' +
+        '<div class="demo-ad__cta">Shop now</div>' +
+      '</div>' +
+    '</div></div>';
+  }
+  function demoBanner(icon, title, body, extraHTML) {
+    return '<div class="demo-banner">' +
+      '<span class="demo-banner__icon">' + icon + '</span>' +
+      '<div class="demo-banner__text"><strong>' + esc(title) + '</strong>' + (body ? '<span>' + esc(body) + '</span>' : "") + '</div>' +
+      (extraHTML || "") +
+    '</div>';
+  }
+  function popupOverlay(title, body, ctaLabel, formHTML) {
+    return '<div class="demo-popup" data-demo-popup>' +
+      '<div class="demo-popup__card">' +
+        '<button class="demo-popup__close" data-demo-popup-close aria-label="Close">×</button>' +
+        '<h3>' + esc(title) + '</h3><p>' + esc(body) + '</p>' +
+        (formHTML || (ctaLabel ? '<button class="btn btn--block">' + esc(ctaLabel) + '</button>' : "")) +
+      '</div>' +
+    '</div>';
+  }
+  function sidePanel(title, rows) {
+    return '<aside class="demo-panel"><h3>' + esc(title) + '</h3>' +
+      rows.map(function (r) { return '<div class="demo-panel__row"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join("") +
+      '</aside>';
+  }
+
+  /* ---------- per-use-case staging (presentation only) ---------- */
+  var STAGE = {
+    "email-capture": function (u) {
+      return demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta")) +
+        '<div class="wrap">' + demoRail(t("new_in"), byPop(4)) + '</div>' +
+        popupOverlay("Get 10% off your first order", ucExample(u),
+          null, '<form data-demo-signup class="demo-signup"><input type="email" placeholder="you@example.com" aria-label="Email" required><button class="btn" type="submit">Sign up</button></form>');
+    },
+    "profile-enrichment": function (u) {
+      var p = byPop(1)[0];
+      return '<div class="wrap demo-split">' + demoPDP(p,
+        sidePanel("Profile forming from behaviour", [
+          ["Interest", p.category + " · " + p.subcategory],
+          ["Brand affinity", p.brand],
+          ["Colour seen", p.color],
+          ["Price band", "€" + Math.floor(effectivePrice(p) / 10) * 10 + "+"],
+          ["Stage", u.lifecycle]
+        ])) + '</div>';
+    },
+    "rt-segmentation": function (u) {
+      var seg = demoState.seg || 0;
+      var segs = ["New visitor", "Womenswear browser", "Sale-seeker", "High-intent (viewed 3+)"];
+      return demoBanner("◉", "Live segment", segs[seg % segs.length],
+        '<button class="btn btn--sm" data-demo-segment style="margin-left:auto">Simulate more browsing →</button>') +
+        '<div class="wrap">' + demoRail(t("picked"), byPop(4)) + '</div>';
+    },
+    "email-recognition": function (u) {
+      return demoBanner("👋", "Welcome back, " + firstName(), ucExample(u)) +
+        demoHero(t("hero_eyebrow"), "Good to see you again, " + firstName(), t("hero_sub"), t("hero_cta")) +
+        '<div class="wrap">' + demoRail(t("picked"), byPop(4)) + '</div>';
+    },
+    "website-reminder": function (u) {
+      var p = byPop(1)[0];
+      return demoBanner("↩", "Continue where you left off", null,
+        '<a class="demo-banner__prod" href="#/product/' + esc(p.sku) + '"><img src="' + esc(img(p.image)) + '" alt=""><span>' + esc(name(p)) + '</span><span class="btn btn--sm">Resume</span></a>') +
+        demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta")) +
+        '<div class="wrap">' + demoRail(t("new_in"), byPop(4)) + '</div>';
+    },
+    "pers-homepage": function (u) {
+      var v = demoState.visitor || "womens";
+      var map = {
+        womens: { eyebrow: "Womenswear, picked for you", head: "Your edit, " + firstName(), list: PRODUCTS.filter(function (p) { return p.category === "Women"; }).slice(0, 4) },
+        mens: { eyebrow: "Menswear, picked for you", head: "New in for you", list: PRODUCTS.filter(function (p) { return p.category === "Men"; }).slice(0, 4) },
+        sale: { eyebrow: "Your size, now on sale", head: "Back in your price range", list: bySale(4) }
+      };
+      var m = map[v] || map.womens;
+      return '<div class="demo-toggle">' +
+          '<span>Visitor type:</span>' +
+          '<button class="demo-chip' + (v === "womens" ? " is-on" : "") + '" data-demo-visitor="womens">Womenswear regular</button>' +
+          '<button class="demo-chip' + (v === "mens" ? " is-on" : "") + '" data-demo-visitor="mens">Menswear regular</button>' +
+          '<button class="demo-chip' + (v === "sale" ? " is-on" : "") + '" data-demo-visitor="sale">Sale-seeker</button>' +
+        '</div>' +
+        demoHero(m.eyebrow, m.head, t("hero_sub"), t("hero_cta")) +
+        '<div class="wrap">' + demoRail("Picked for " + firstName(), m.list) + '</div>';
+    },
+    "rec-onsite": function (u) {
+      return '<div class="wrap"><h1 class="page-title">' + esc(t("nav_women")) + '</h1>' +
+        demoRail("Recommended for you", byPop(4)) +
+        gridHTML(byPop(8).slice(4, 8)) + '</div>';
+    },
+    "rec-matching": function (u) {
+      var p = byPop(1)[0];
+      return demoPDP(p, "") + '<div class="wrap">' + demoRail("You might also like", similarTo(p, 4)) + '</div>';
+    },
+    "persuasive-product": function (u) {
+      var p = lowStockOne();
+      var proof = '<div class="demo-proof">' +
+        '<span class="demo-proof__item">👁 18 people viewing now</span>' +
+        '<span class="demo-proof__item">🔥 Only ' + p.stock + ' left</span>' +
+        '<span class="demo-proof__item">✓ 34 bought this week</span>' +
+      '</div>';
+      return demoPDP(p, proof);
+    },
+    "persuasive-popups": function (u) {
+      var p = byPop(1)[0];
+      return demoPDP(p, "") + popupOverlay("Selling fast", ucExample(u), "Add to cart");
+    },
+    "rec-crosssell": function (u) {
+      var p = byPop(1)[0]; var adds = similarTo(p, 3);
+      return '<div class="wrap demo-checkout"><h1 class="page-title">' + esc(t("checkout") || "Checkout") + '</h1>' +
+        '<div class="demo-cartline"><img src="' + esc(img(p.image)) + '" alt=""><div><b>' + esc(name(p)) + '</b><span>' + esc(p.brand) + '</span></div><span class="money">' + esc(money(effectivePrice(p))) + '</span></div>' +
+        demoRail("Complete your order with…", adds) + '</div>';
+    },
+    "abandoned-cart": function (u) {
+      var items = byPop(2);
+      return emailPreview(u, '<p class="demo-email__lead">You left these in your bag — still yours if you want them.</p>' +
+        emailProductRow(items) +
+        '<p class="demo-email__urgency">Low stock on one of these — don’t miss out.</p>' +
+        '<div class="demo-email__cta">Complete your order</div>');
+    },
+    "browse-abandonment": function (u) {
+      return emailPreview(u, '<p class="demo-email__lead">Still thinking it over? Here’s what you were looking at.</p>' +
+        emailProductRow(byPop(3)) +
+        '<div class="demo-email__cta">Pick up where you left off</div>');
+    },
+    "back-in-stock": function (u) {
+      var p = soldOutOne();
+      return emailPreview(u, '<p class="demo-email__lead">Good news — it’s back.</p>' +
+        emailProductRow([p]) +
+        '<p class="demo-email__urgency">Limited stock this time.</p>' +
+        '<div class="demo-email__cta">Get it before it goes</div>');
+    },
+    "rec-email": function (u) {
+      return emailPreview(u, '<p class="demo-email__lead">Hand-picked for you, ' + firstName() + '.</p>' +
+        emailProductRow(byPop(4)) +
+        '<div class="demo-email__cta">Shop your picks</div>');
+    },
+    "online-retargeting": function (u) {
+      return adPreview(u, byPop(3));
+    },
+    "followup-loyalty": function (u) {
+      return emailPreview(u, '<p class="demo-email__lead">Thanks for your order, ' + firstName() + '.</p>' +
+        '<div class="demo-reward">★ You’ve earned <b>150 points</b> · €10 off your next order</div>' +
+        emailProductRow(byPop(3)) +
+        '<div class="demo-email__cta">Use your reward</div>');
+    },
+    "predictive-clv": function (u) {
+      return demoBanner("★", firstName() + " — VIP customer", "Predicted high lifetime value") +
+        demoHero("Because you’re one of our best", "Early access, just for you, " + firstName(), t("hero_sub"), "Shop VIP early access") +
+        '<div class="wrap"><div class="demo-vip">' +
+          '<div class="demo-vip__perk">🎟 Early access to new drops</div>' +
+          '<div class="demo-vip__perk">🚚 Free priority shipping</div>' +
+          '<div class="demo-vip__perk">💬 Personal styling concierge</div>' +
+        '</div>' + demoRail("Chosen for a VIP", byPop(4)) + '</div>';
+    }
+  };
+
+  // Use cases that genuinely need signal (known visitor / prior behaviour) — shown honestly.
+  var UC_NEEDS_SIGNAL = {
+    "email-recognition": "Kicks in only once a visitor is recognised (known profile) — a true first-time anonymous visit can't be greeted by name.",
+    "website-reminder": "Needs prior behaviour — this shows a returning visitor who viewed items before.",
+    "pers-homepage": "Personalises once there's a segment/profile signal; a brand-new anonymous visitor sees the default homepage.",
+    "rec-onsite": "Improves as behaviour accrues; cold-start falls back to popular items.",
+    "rec-matching": "Based on the product being viewed plus behavioural signal.",
+    "abandoned-cart": "Triggers after a known contact leaves items in the cart.",
+    "browse-abandonment": "Triggers after a known contact browses without buying.",
+    "back-in-stock": "Triggers for contacts who asked about an out-of-stock item.",
+    "rec-email": "Recommendations are per-contact, so it needs a known profile.",
+    "online-retargeting": "Builds audiences from first-party behaviour, then syncs to ad platforms.",
+    "followup-loyalty": "Triggers after a purchase.",
+    "predictive-clv": "Scored in Spotler Activate from purchase history; shown here as the VIP treatment a high-CLV contact receives."
+  };
+
+  function demoCaption(u) {
+    var idx = UC_ORDER.indexOf(u.id);
+    var prev = UC_ORDER[(idx - 1 + UC_ORDER.length) % UC_ORDER.length];
+    var next = UC_ORDER[(idx + 1) % UC_ORDER.length];
+    var signal = UC_NEEDS_SIGNAL[u.id];
+    return '<div class="demo-caption" data-demo-caption>' +
+      '<button class="demo-caption__toggle" data-demo-caption-toggle aria-label="Toggle demo notes">i</button>' +
+      '<div class="demo-caption__body">' +
+        '<div class="demo-caption__eyebrow">Spotler Activate · use case ' + String(u.number).padStart(2, "0") + '</div>' +
+        '<div class="demo-caption__name">' + esc(u.name) + '</div>' +
+        '<div class="demo-caption__hook">' + esc(u.hook) + '</div>' +
+        '<div class="demo-caption__bench"><b>' + esc((u.metrics.commerce || {}).value || "") + '</b> ' + esc((u.metrics.commerce || {}).label || "") +
+          ' <span class="demo-caption__illus">illustrative</span></div>' +
+        '<div class="demo-caption__point"><span>Point at:</span> ' + esc(u.demo_screen) + '</div>' +
+        (signal ? '<div class="demo-caption__note">' + esc(signal) + '</div>' : "") +
+        '<div class="demo-caption__nav">' +
+          '<a href="#/usecase/' + prev + '">← prev</a>' +
+          '<a href="#/usecases">all 18</a>' +
+          '<a href="#/usecase/' + next + '">next →</a>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderUseCaseDemo(id) {
+    var u = UC_BY_ID[id];
+    if (!u) {
+      return '<div class="wrap"><div class="empty-state" style="padding:var(--space-16) 0">' +
+        'Unknown demo id: ' + esc(id) + '. <a href="#/usecases">See all 18 demos →</a></div></div>';
+    }
+    currentDemoId = id;
+    var stage = STAGE[id] || function () { return '<div class="wrap"><p>' + esc(ucExample(u)) + '</p></div>'; };
+    return '<div class="demo-stage">' + stage(u) + demoCaption(u) + '</div>';
+  }
+
+  function renderUseCaseIndex() {
+    currentDemoId = null;
+    var rows = UC.map(function (u) {
+      return '<a class="demo-index__row" href="#/usecase/' + u.id + '">' +
+        '<span class="demo-index__num">' + String(u.number).padStart(2, "0") + '</span>' +
+        '<span class="demo-index__main"><b>' + esc(u.name) + '</b><span>' + esc(u.hook) + '</span></span>' +
+        '<span class="demo-index__bench">' + esc((u.metrics.commerce || {}).value || "") + '</span>' +
+        '<code class="demo-index__id">#/usecase/' + u.id + '</code>' +
+      '</a>';
+    }).join("");
+    return '<div class="wrap demo-index">' +
+      '<p class="eyebrow">Internal · sales demos · unlisted</p>' +
+      '<h1 class="page-title">Spotler Activate — 18 use-case demos</h1>' +
+      '<p class="demo-index__intro">Each page stages one Activate use case live inside Shopler. Not linked from the shop — share the direct URL. Benchmarks shown are illustrative.</p>' +
+      '<div class="demo-index__list">' + rows + '</div>' +
+    '</div>';
+  }
+
+  // Delegated interactions for the demo pages only (namespaced data-demo-*).
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment]");
+    if (!el) return;
+    if (el.hasAttribute("data-demo-caption-toggle")) { e.preventDefault(); var c = document.querySelector("[data-demo-caption]"); if (c) c.classList.toggle("is-collapsed"); return; }
+    if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var p = el.closest("[data-demo-popup]"); if (p) p.remove(); return; }
+    if (el.hasAttribute("data-demo-visitor")) { e.preventDefault(); demoState.visitor = el.getAttribute("data-demo-visitor"); rerenderDemo(); return; }
+    if (el.hasAttribute("data-demo-segment")) { e.preventDefault(); demoState.seg = (demoState.seg || 0) + 1; rerenderDemo(); return; }
+  });
+  document.addEventListener("submit", function (e) {
+    if (e.target.matches("[data-demo-signup]")) {
+      e.preventDefault();
+      var em = e.target.querySelector('input[type="email"]');
+      if (em && em.value.trim() && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(em.value.trim(), true); } catch (x) {} }
+      var card = e.target.closest(".demo-popup__card");
+      if (card) card.innerHTML = '<h3>You’re on the list ✓</h3><p>That’s the EmailOptIn event firing to Spotler Activate.</p>';
+    }
+  });
+  function rerenderDemo() {
+    if (!currentDemoId) return;
+    var app = document.getElementById("app");
+    if (app) app.innerHTML = renderUseCaseDemo(currentDemoId);
+  }
   /* ---------------- Boot ---------------- */
   trackUserId(); // seed Squeezely identity before the first page event
   renderChrome(); renderFooter(); renderDrawer(); renderConsent(); render();
