@@ -1,0 +1,7 @@
+# Shopler demo storefront. The hidden Spotler Activate use-case demo pages
+# (#/usecase/<id> and the #/usecases index) are unlisted sales-demo pages and
+# should not be indexed. They are hash-routes on this single page, so they have
+# no crawlable URLs of their own; this file plus a route-scoped noindex meta tag
+# (added by app.js on those routes) keep them out of search results.
+User-agent: *
+Disallow:
