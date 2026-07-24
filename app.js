@@ -1272,23 +1272,16 @@
       if (!demoState.uc02) return;
       var ug = el.getAttribute("data-uc02-filter"), uv = el.value;
       var ua = ug === "brand" ? demoState.uc02.brands : ug === "colour" ? demoState.uc02.colours : ug === "subcat" ? demoState.uc02.subcats : demoState.uc02.sizes;
-      if (el.checked) { if (ua.indexOf(uv) < 0) ua.push(uv); }
-      else { var uii = ua.indexOf(uv); if (uii >= 0) ua.splice(uii, 1); }
-      demoState.uc02.eventCount = (demoState.uc02.eventCount || 0) + 1;
-      rerenderDemo();
-    } else if (el.matches("[data-uc02-gender]")) {
-      if (!demoState.uc02) return;
-      demoState.uc02.gender = el.value;
-      demoState.uc02.eventCount = (demoState.uc02.eventCount || 0) + 1;
-      rerenderDemo();
-    } else if (el.matches("[data-uc02-price]")) {
-      if (!demoState.uc02) return;
-      demoState.uc02.price = el.value;
-      rerenderDemo();
-    } else if (el.matches("[data-uc02-sort]")) {
-      if (!demoState.uc02) return;
-      demoState.uc02.sort = el.value;
-      rerenderDemo();
+      if (el.checked) {
+        if (ua.indexOf(uv) < 0) {
+          ua.push(uv);
+          var flabel = ug.charAt(0).toUpperCase() + ug.slice(1) + ' \u00b7 ' + uv;
+          demoState.uc02.activity.unshift({ event: 'FilterApplied', label: flabel, ts: Date.now() });
+        }
+      } else {
+        var uii = ua.indexOf(uv); if (uii >= 0) ua.splice(uii, 1);
+      }
+      rerenderDemo(); ucsplitPulse();
     }
   });
   document.addEventListener("submit", function (e) {
@@ -1501,22 +1494,26 @@
       ? '<span class="ucact-tag ucact-tag--known' + (animate ? " ucact-seq ucact-seq--chip" : "") + '">Known</span>'
       : '<span class="ucact-tag ucact-tag--anon">Anonymous</span>';
 
-    // System section — live fields with date column when systemFields opt provided.
+    var sections = opts.sections !== undefined ? opts.sections : null;
+
+    // System section — human-readable label + tech key + val + date.
     var sysContent;
     if (opts.systemFields) {
       var sf = opts.systemFields, pk = sf.prevKeys || [];
       sysContent = sf.fields.length === 0
         ? '<p class="ucact-empty">No fields found.</p>'
         : '<div class="uc02-system-section">' +
-            '<div class="uc02-col-date-hdr"><span>Field</span><span>Date</span></div>' +
             sf.fields.map(function(fi) {
               var isNew = pk.indexOf(fi.key) < 0;
               return '<div class="uc02-sysfield' + (isNew ? ' uc02-sysfield--new' : '') + '">' +
                 '<div class="uc02-sysfield__left">' +
-                  '<span class="uc02-sysfield__key">' + esc(fi.key) + '</span>' +
-                  '<span class="uc02-sysfield__val">' + esc(fi.val) + '</span>' +
+                  '<span class="uc02-sysfield__label">' + esc(uc02FieldLabel(fi.key)) + '</span>' +
+                  '<span class="uc02-sysfield__tech">' + esc(fi.key) + '</span>' +
                 '</div>' +
-                '<span class="uc02-sysfield__date">' + esc(fi.date) + '</span>' +
+                '<div class="uc02-sysfield__right">' +
+                  '<span class="uc02-sysfield__val">' + esc(fi.val) + '</span>' +
+                  '<span class="uc02-sysfield__date">' + esc(fi.date) + '</span>' +
+                '</div>' +
               '</div>';
             }).join('') +
           '</div>';
@@ -1548,14 +1545,19 @@
         : '<p class="ucact-empty">No fields found.</p>';
     }
 
-    var profileContent =
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' + sysContent + '</div>' +
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>' +
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>';
+    var allSections = {
+      system:  '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' + sysContent + '</div>',
+      custom:  '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>',
+      contact: '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>'
+    };
+    var sectionKeys = sections || ['system', 'custom', 'contact'];
+    var profileContent = sectionKeys.map(function(k) { return allSections[k] || ''; }).join('');
 
-    // Activity tab \u2014 event counter (UC02) or EmailOptIn item (UC01 default).
+    // Activity tab \u2014 uc02 feed, event counter, or UC01 EmailOptIn item.
     var actHTML;
-    if (opts.eventCount != null) {
+    if (opts.activity) {
+      actHTML = uc02ActivityFeed(opts.activity);
+    } else if (opts.eventCount != null) {
       var ec = opts.eventCount;
       actHTML = '<div class="ucact-activity">' +
         (ec > 0
@@ -1605,7 +1607,14 @@
 
   /* --- Shared: split-screen shell (ucsplit-*) --- */
   function ucsplitShell(leftHTML, rightHTML) {
-    return '<div class="ucsplit-shell"><div class="ucsplit-left">' + leftHTML + '</div><div class="ucsplit-right">' + rightHTML + '</div></div>';
+    return '<div class="ucsplit-shell"><div class="ucsplit-left">' + leftHTML + '</div><div class="ucsplit-gutter"></div><div class="ucsplit-right">' + rightHTML + '</div></div>';
+  }
+  function ucsplitPulse() {
+    var sh = document.querySelector('.ucsplit-shell');
+    if (!sh) return;
+    sh.classList.remove('ucsplit-pulse-on');
+    void sh.offsetWidth;
+    sh.classList.add('ucsplit-pulse-on');
   }
 
   /* ============================================================
@@ -1947,23 +1956,56 @@
   }
 
   /* --- UC02: Profile Enrichment helpers --- */
+  /* --- UC02: Profile Enrichment helpers --- */
+  function uc02FieldLabel(key) {
+    var m, r = ['','1st','2nd','3rd'];
+    if ((m = key.match(/^favorite_brand_(\d)$/)))    return 'Favourite brand \u00b7 ' + (r[+m[1]] || m[1] + 'th');
+    if ((m = key.match(/^favorite_size_(\d)$/)))     return 'Favourite size \u00b7 ' + (r[+m[1]] || m[1] + 'th');
+    if ((m = key.match(/^favorite_category_(\d)$/))) return 'Favourite category \u00b7 ' + (r[+m[1]] || m[1] + 'th');
+    if (key === 'favorite_color_1')    return 'Favourite colour \u00b7 1st';
+    if (key === 'favorite_categories') return 'Favourite categories';
+    if (key === 'gender')              return 'Gender';
+    return key;
+  }
+
+  function uc02ActivityFeed(activity) {
+    if (!activity || !activity.length) return '<p class="ucact-empty" style="padding:12px 0">No activity yet.</p>';
+    return '<div class="uc02-feed">' +
+      activity.map(function(item) {
+        var d = new Date(item.ts);
+        var clock = (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+        var day = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        return '<div class="uc02-feed__item">' +
+          '<div class="uc02-feed__time-col"><span class="uc02-feed__clock">' + clock + '</span><span class="uc02-feed__day">' + day + '</span></div>' +
+          '<div class="uc02-feed__rail"><span class="uc02-feed__dot"></span><span class="uc02-feed__line"></span></div>' +
+          '<div class="uc02-feed__card"><div><div><b class="uc02-feed__evname">' + esc(item.event) + '</b><span class="uc02-feed__evtype">event</span></div>' +
+            (item.label ? '<div class="uc02-feed__obj">' + esc(item.label) + '</div>' : '') +
+          '</div><span class="uc02-feed__chev">\u203a</span></div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
   function uc02DeriveFields(st, today) {
     var fields = [];
-    st.brands.forEach(function(b, i) {
-      if (i < 3) fields.push({ key: "favorite_brand_" + (i + 1), val: b, date: today });
-    });
-    if (st.colours.length) fields.push({ key: "favorite_color_1", val: st.colours[0], date: today });
-    if (st.sizes.length) fields.push({ key: "favorite_size_1", val: st.sizes[0], date: today });
-    if (st.subcats.length) {
-      var viewSlug = st.view !== "all" ? st.view : "all";
-      var subcatSlugs = st.subcats.map(function(s) {
-        return viewSlug + "-" + s.toLowerCase().replace(/\s+/g, "-");
-      });
-      fields.push({ key: "favorite_categories", val: [viewSlug].concat(subcatSlugs).join(", "), date: today });
-      subcatSlugs.forEach(function(slug, si) {
-        if (si < 3) fields.push({ key: "favorite_category_" + (si + 1), val: slug, date: today });
-      });
+    if (st.category) {
+      fields.push({ key: 'favorite_categories', val: st.category.charAt(0).toUpperCase() + st.category.slice(1), date: today });
     }
+    if (st.gender) {
+      fields.push({ key: 'gender', val: st.gender === 'female' ? 'Female' : 'Male', date: today });
+    }
+    st.brands.forEach(function(b, i) {
+      if (i < 3) fields.push({ key: 'favorite_brand_' + (i + 1), val: b, date: today });
+    });
+    if (st.colours.length) {
+      fields.push({ key: 'favorite_color_1', val: st.colours[0], date: today });
+    }
+    st.sizes.forEach(function(s, i) {
+      if (i < 3) fields.push({ key: 'favorite_size_' + (i + 1), val: s, date: today });
+    });
+    st.subcats.forEach(function(sc, i) {
+      if (i < 3) fields.push({ key: 'favorite_category_' + (i + 1), val: sc, date: today });
+    });
     return fields;
   }
 
@@ -1978,111 +2020,94 @@
 
   var UC02_SIZE_ORDER = ["28","30","32","34","36","37","38","39","40","41","42","44","S","M","L","XL","One size"];
 
-  function uc02Listing(st) {
-    var view = st.view || "women";
-    var allProds = productsForView(view);
-    var prods = allProds.slice();
+  function uc02DemoHdr() {
+    return '<div class="uc02-demo-hdr"><a class="brand" href="#/">' + monogramSVG() + '<span class="wm">Shopler</span></a></div>';
+  }
 
+  function uc02Landing(st) {
+    var cats = [
+      { id: 'women', label: 'Women' },
+      { id: 'men', label: 'Men' },
+      { id: 'accessories', label: 'Accessories' }
+    ];
+    var tilesHTML = '<div class="uc02-landing__tiles">' +
+      cats.map(function(c) {
+        var hero = productsForView(c.id).sort(function(a, b) { return (b.popularity||0) - (a.popularity||0); })[0];
+        return '<button class="uc02-tile" data-uc02-cat="' + c.id + '">' +
+          (hero ? '<img src="' + esc(img(hero.image_lifestyle || hero.image)) + '" alt="" loading="lazy">' : '') +
+          '<span>' + esc(c.label) + '</span>' +
+        '</button>';
+      }).join('') +
+    '</div>';
+    return uc02DemoHdr() + '<div class="uc02-landing">' + tilesHTML + '</div>';
+  }
+
+  function uc02CategoryPage(st, u) {
+    var cat = st.category || 'women';
+    var allProds = productsForView(cat);
+    var prods = allProds.slice();
     if (st.brands.length) prods = prods.filter(function(p) { return st.brands.indexOf(p.brand) >= 0; });
     if (st.colours.length) prods = prods.filter(function(p) { return st.colours.indexOf(p.color) >= 0; });
     if (st.sizes.length) prods = prods.filter(function(p) {
-      var pz = sizesFor(p); return st.sizes.some(function(s) { return pz.indexOf(s) >= 0; });
+      var sz = sizesFor(p); return st.sizes.some(function(s) { return sz.indexOf(s) >= 0; });
     });
     if (st.subcats.length) prods = prods.filter(function(p) { return st.subcats.indexOf(p.subcategory) >= 0; });
-    if (st.price === "0-50") prods = prods.filter(function(p) { return effectivePrice(p) < 50; });
-    else if (st.price === "50-100") prods = prods.filter(function(p) { return effectivePrice(p) >= 50 && effectivePrice(p) < 100; });
-    else if (st.price === "100+") prods = prods.filter(function(p) { return effectivePrice(p) >= 100; });
+    prods.sort(function(a, b) { return (b.popularity||0) - (a.popularity||0); });
 
-    if (st.sort === "price-asc") prods.sort(function(a, b) { return effectivePrice(a) - effectivePrice(b); });
-    else if (st.sort === "price-desc") prods.sort(function(a, b) { return effectivePrice(b) - effectivePrice(a); });
-    else prods.sort(function(a, b) { return (b.popularity || 0) - (a.popularity || 0); });
-
-    var fBrands = [], fColours = [], fSizes = [], fSubcats = [];
-    allProds.forEach(function(p) {
-      if (fBrands.indexOf(p.brand) < 0) fBrands.push(p.brand);
-      if (p.color && fColours.indexOf(p.color) < 0) fColours.push(p.color);
-      if (p.subcategory && fSubcats.indexOf(p.subcategory) < 0) fSubcats.push(p.subcategory);
-      sizesFor(p).forEach(function(s) { if (fSizes.indexOf(s) < 0) fSizes.push(s); });
-    });
-    fBrands.sort(); fColours.sort(); fSubcats.sort();
+    var fBrands  = uniq(allProds.map(function(p) { return p.brand; })).sort();
+    var fColours = uniq(allProds.map(function(p) { return p.color; })).sort();
+    var fSizes   = uniq(allProds.reduce(function(acc, p) { return acc.concat(sizesFor(p)); }, []));
     fSizes.sort(function(a, b) {
-      var ai = UC02_SIZE_ORDER.indexOf(a), bi = UC02_SIZE_ORDER.indexOf(b);
-      if (ai >= 0 && bi >= 0) return ai - bi;
-      if (ai >= 0) return -1; if (bi >= 0) return 1;
-      return a < b ? -1 : a > b ? 1 : 0;
+      var o = UC02_SIZE_ORDER, ai = o.indexOf(a), bi = o.indexOf(b);
+      if (ai < 0) ai = 999; if (bi < 0) bi = 999; return ai - bi;
     });
-
-    var tabsHTML = '<nav class="uc02-cat-nav">' +
-      ["women","men","accessories","sale"].map(function(v) {
-        return '<button class="uc02-cat-tab' + (v === view ? " is-active" : "") + '" data-uc02-view="' + v + '">' +
-          v.charAt(0).toUpperCase() + v.slice(1) + '</button>';
-      }).join("") +
-    '</nav>';
-
-    var chips = [];
-    st.brands.forEach(function(b) { chips.push('<span class="chip">' + esc(b) + '<button data-uc02-remove="brand:' + esc(b) + '" aria-label="Remove">×</button></span>'); });
-    st.colours.forEach(function(c) { chips.push('<span class="chip">' + esc(c) + '<button data-uc02-remove="colour:' + esc(c) + '" aria-label="Remove">×</button></span>'); });
-    st.sizes.forEach(function(s) { chips.push('<span class="chip">' + esc(s) + '<button data-uc02-remove="size:' + esc(s) + '" aria-label="Remove">×</button></span>'); });
-    st.subcats.forEach(function(s) { chips.push('<span class="chip">' + esc(s) + '<button data-uc02-remove="subcat:' + esc(s) + '" aria-label="Remove">×</button></span>'); });
-    if (st.gender) chips.push('<span class="chip">Gender: ' + esc(st.gender) + '<button data-uc02-remove="gender:" aria-label="Remove">×</button></span>');
-    if (st.price) chips.push('<span class="chip">Price: ' + esc(st.price) + '<button data-uc02-remove="price:" aria-label="Remove">×</button></span>');
-    var chipsHTML = chips.length
-      ? '<div class="chiprow">' + chips.join("") + '<button class="linkbtn" data-uc02-clear>Clear all</button></div>'
-      : '';
-
-    var genderSection = '<h3>Gender</h3><div class="fgroup">' +
-      ['women','men'].map(function(g) {
-        return '<label><input type="radio" name="uc02-gender" data-uc02-gender value="' + g + '"' + (st.gender === g ? ' checked' : '') + '>' + g.charAt(0).toUpperCase() + g.slice(1) + '</label>';
-      }).join('') +
-    '</div>';
-
-    var priceSection = '<h3>Price</h3><div class="fgroup">' +
-      '<select data-uc02-price>' +
-        '<option value="">All prices</option>' +
-        '<option value="0-50"' + (st.price === "0-50" ? ' selected' : '') + '>Under €50</option>' +
-        '<option value="50-100"' + (st.price === "50-100" ? ' selected' : '') + '>€50–€100</option>' +
-        '<option value="100+"' + (st.price === "100+" ? ' selected' : '') + '>€100+</option>' +
-      '</select>' +
-    '</div>';
+    var fSubcats = uniq(allProds.map(function(p) { return p.subcategory; }));
 
     var sidebarHTML = '<aside class="filters">' +
-      listingFacetGroup("Brand", fBrands, "brand", st.brands, "data-uc02-filter") +
-      listingFacetGroup("Colour", fColours, "colour", st.colours, "data-uc02-filter") +
-      (fSizes.length ? listingFacetGroup("Size", fSizes, "size", st.sizes, "data-uc02-filter") : '') +
-      (fSubcats.length > 1 ? listingFacetGroup("Category", fSubcats, "subcat", st.subcats, "data-uc02-filter") : '') +
-      genderSection +
-      priceSection +
+      (fBrands.length  ? listingFacetGroup('Brand',    fBrands,  'brand',  st.brands,  'data-uc02-filter') : '') +
+      (fColours.length ? listingFacetGroup('Colour',   fColours, 'colour', st.colours, 'data-uc02-filter') : '') +
+      (fSizes.length   ? listingFacetGroup('Size',     fSizes,   'size',   st.sizes,   'data-uc02-filter') : '') +
+      (fSubcats.length > 1 ? listingFacetGroup('Category', fSubcats, 'subcat', st.subcats, 'data-uc02-filter') : '') +
     '</aside>';
 
-    var sortBarHTML = '<div class="listing__bar">' +
-      '<span class="count">' + prods.length + (prods.length === 1 ? ' product' : ' products') + '</span>' +
-      '<label>Sort: <select data-uc02-sort>' +
-        '<option value="featured"' + (st.sort === "featured" ? ' selected' : '') + '>Featured</option>' +
-        '<option value="price-asc"' + (st.sort === "price-asc" ? ' selected' : '') + '>Price: low → high</option>' +
-        '<option value="price-desc"' + (st.sort === "price-desc" ? ' selected' : '') + '>Price: high → low</option>' +
-      '</select></label>' +
-    '</div>';
+    var catNavHTML = '<nav class="uc02-cat-nav">' +
+      ['women','men','accessories'].map(function(v) {
+        return '<button class="uc02-cat-tab' + (v === cat ? ' is-active' : '') + '" data-uc02-view="' + v + '">' +
+          v.charAt(0).toUpperCase() + v.slice(1) + '</button>';
+      }).join('') +
+    '</nav>';
 
+    var catTitle = cat === 'women' ? t('nav_women') || 'Women' : cat === 'men' ? t('nav_men') || 'Men' : t('nav_accessories') || 'Accessories';
     var gridContent = prods.length
-      ? '<div class="grid">' + prods.map(function(p) { return cardHTML(p); }).join("") + '</div>'
+      ? '<div class="grid">' + prods.slice(0, 20).map(function(p) {
+          return '<article class="card" data-uc02-prod="' + esc(p.sku) + '">' +
+            '<div class="card__media"><img class="card__img--lifestyle" src="' + esc(img(p.image_lifestyle || p.image)) + '" alt="' + esc(name(p)) + '" loading="lazy"></div>' +
+            '<div class="card__body"><div class="card__brand">' + esc(p.brand) + '</div><div class="card__name">' + esc(name(p)) + '</div>' + priceHTML(p) + '</div>' +
+          '</article>';
+        }).join('') + '</div>'
       : '<div class="empty-state">No products match your filters.</div>';
 
-    return '<div class="uc02-shopler">' +
-      '<div class="uc02-shopler-body">' +
-        '<div class="wrap">' +
-          tabsHTML +
-          '<div class="listing">' +
-            sidebarHTML +
-            '<div>' +
-              sortBarHTML +
-              chipsHTML +
-              gridContent +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+    var filterCount = st.brands.length + st.colours.length + st.sizes.length + st.subcats.length;
+    var popupHTML = (!st.done && filterCount >= 3)
+      ? '<div class="uc02-overlay"><div class="uc01-overlay__card">' +
+          '<h3 class="uc01-overlay__title">Great taste!</h3>' +
+          '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
+          '<form class="uc01-signup" data-uc02-signup>' +
+            '<input class="uc01-signup__field" type="text" name="name" placeholder="First name" autocomplete="given-name" required>' +
+            '<input class="uc01-signup__field" type="email" name="email" placeholder="Email address" autocomplete="email" required>' +
+            '<label class="uc01-signup__consent"><input type="checkbox">\u00a0I agree to receive the Shopler newsletter</label>' +
+            '<button class="btn btn--block uc01-signup__btn" type="submit">Get personalised picks</button>' +
+          '</form></div></div>'
+      : '';
+
+    return uc02DemoHdr() +
+      '<div class="uc02-step2"><div class="uc02-step2__body"><div class="wrap">' +
+        catNavHTML +
+        '<h2 class="uc02-step2__title">' + esc(catTitle) + '</h2>' +
+        '<div class="listing">' + sidebarHTML + '<div>' + gridContent + '</div></div>' +
+      '</div></div>' + popupHTML + '</div>';
   }
+
 
   /* ---------- per-use-case staging (presentation only) ---------- */
   var STAGE = {
@@ -2121,45 +2146,50 @@
 
       var overlayHTML = '<div class="uc01-overlay">' + overlayCardHTML + '</div>';
 
-      var leftHTML = ucactProfile({done: done, name: submittedName, email: submittedEmail, tab: activeTab, animate: animate}) +
+      var leftHTML = ucactProfile({sections: ['system', 'custom', 'contact'], done: done, name: submittedName, email: submittedEmail, tab: activeTab, animate: animate}) +
         demoCaption(u, true);
 
-      var shellCls = "ucsplit-shell" + (animate ? " uc01-pulse" : "");
       return '<button class="uc01-replay" data-uc01-replay>\u21ba Replay</button>' +
-        '<div class="' + shellCls + '">' +
-          '<div class="ucsplit-left">' + leftHTML + '</div>' +
-          '<div class="ucsplit-gutter"></div>' +
-          '<div class="ucsplit-right">' +
-            '<div class="uc01-shopler">' +
-              shoplerHdr +
-              '<div class="uc01-shopler-body">' +
-                heroHTML + railHTML +
-              '</div>' +
+        ucsplitShell(leftHTML,
+          '<div class="uc01-shopler">' +
+            shoplerHdr +
+            '<div class="uc01-shopler-body">' +
+              heroHTML + railHTML +
             '</div>' +
-            overlayHTML +
           '</div>' +
-        '</div>';
+          overlayHTML);
     },
     "profile-enrichment": function(u) {
       if (!demoState.uc02) {
-        demoState.uc02 = { view: "women", subcats: [], brands: [], colours: [], sizes: [], gender: null, price: "", sort: "featured", tab: "profile", eventCount: 0, prevFieldKeys: [] };
+        demoState.uc02 = { step: 2, category: 'women', gender: 'female',
+          brands: [], colours: [], sizes: [], subcats: [],
+          activity: [], done: false, name: '', email: '', animate: false,
+          tab: 'profile', prevFieldKeys: [] };
       }
       var st = demoState.uc02;
+      var animate = !!st.animate;
+      if (animate) st.animate = false;
       var today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
       var fields = uc02DeriveFields(st, today);
       var prevKeys = (st.prevFieldKeys || []).slice();
       st.prevFieldKeys = fields.map(function(f) { return f.key; });
-      var genderVal = st.gender ? st.gender.charAt(0).toUpperCase() + st.gender.slice(1) : null;
-      var leftHTML = ucactProfile({
-        tabAttr: "data-uc02-tab",
-        tab: st.tab,
-        showSearch: false,
-        systemFields: { fields: fields, prevKeys: prevKeys },
-        contactRows: [{ key: "Gender", val: genderVal || "Unknown", dim: !genderVal }],
-        eventCount: st.eventCount || 0,
-        previewNote: "Apply filters on the right → watch the profile update live."
-      });
-      return ucsplitShell(leftHTML, uc02Listing(st));
+      var leftHTML =
+        '<button class="uc02-replay-btn" data-uc02-replay>\u21ba Replay</button>' +
+        ucactProfile({
+          sections: ['system', 'contact'],
+          tabAttr: 'data-uc02-tab',
+          tab: st.tab,
+          showSearch: false,
+          done: st.done,
+          name: st.name,
+          email: st.email,
+          animate: animate,
+          systemFields: { fields: fields, prevKeys: prevKeys },
+          activity: st.activity,
+          previewNote: 'Apply filters to build the profile \u2192 watch it update live.'
+        }) + demoCaption(u, true);
+      var rightHTML = st.step === 1 ? uc02Landing(st) : uc02CategoryPage(st, u);
+      return ucsplitShell(leftHTML, rightHTML);
     },
     "rt-segmentation": function (u) {
       if (!demoState.uc03) {
@@ -2188,14 +2218,10 @@
 
       var rightHTML = uc03RightPane(s);
 
-      return '<div class="ucsplit-shell">' +
-          '<div class="ucsplit-left">' +
-            '<button class="uc03-replay-btn" data-uc03-replay>↺ Replay</button>' +
-            leftHTML +
-          '</div>' +
-          '<div class="ucsplit-gutter"></div>' +
-          '<div class="ucsplit-right">' + rightHTML + '</div>' +
-        '</div>';
+      return ucsplitShell(
+        '<button class="uc03-replay-btn" data-uc03-replay>\u21ba Replay</button>' +
+        leftHTML,
+        rightHTML);
     },
     "email-recognition": function (u) {
       return demoBanner("👋", "Welcome back, " + firstName(), ucExample(u)) +
@@ -2411,7 +2437,7 @@
 
   // Delegated interactions for demo pages (data-demo-* and data-uc01-*).
   document.addEventListener("click", function (e) {
-    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay],[data-uc02-tab],[data-uc02-view],[data-uc02-remove],[data-uc02-clear]");
+    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay],[data-uc02-tab],[data-uc02-cat],[data-uc02-prod],[data-uc02-replay],[data-uc02-view],[data-uc02-remove],[data-uc02-clear]");
     if (!el) return;
     if (el.hasAttribute("data-demo-caption-toggle")) { e.preventDefault(); var c = document.querySelector("[data-demo-caption]"); if (c) c.classList.toggle("is-collapsed"); return; }
     if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var pp = el.closest("[data-demo-popup]"); if (pp) pp.remove(); return; }
@@ -2428,9 +2454,41 @@
     if (el.hasAttribute("data-uc02-view")) {
       e.preventDefault();
       if (!demoState.uc02) return;
-      demoState.uc02.view = el.getAttribute("data-uc02-view");
-      demoState.uc02.subcats = []; demoState.uc02.brands = []; demoState.uc02.colours = [];
-      demoState.uc02.sizes = []; demoState.uc02.price = ""; demoState.uc02.gender = null;
+      var vc = el.getAttribute("data-uc02-view");
+      demoState.uc02.category = vc;
+      demoState.uc02.gender = vc === 'women' ? 'female' : vc === 'men' ? 'male' : null;
+      demoState.uc02.step = 2;
+      demoState.uc02.brands = []; demoState.uc02.colours = []; demoState.uc02.sizes = []; demoState.uc02.subcats = [];
+      demoState.uc02.activity.unshift({ event: 'ViewCategory', label: vc.charAt(0).toUpperCase() + vc.slice(1), ts: Date.now() });
+      rerenderDemo(); ucsplitPulse(); return;
+    }
+    if (el.hasAttribute("data-uc02-cat")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      var cat2 = el.getAttribute("data-uc02-cat");
+      demoState.uc02.category = cat2;
+      demoState.uc02.gender = cat2 === 'women' ? 'female' : cat2 === 'men' ? 'male' : null;
+      demoState.uc02.step = 2;
+      demoState.uc02.activity.unshift({ event: 'ViewCategory', label: cat2.charAt(0).toUpperCase() + cat2.slice(1), ts: Date.now() });
+      rerenderDemo(); ucsplitPulse(); return;
+    }
+    if (el.hasAttribute("data-uc02-prod")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      var sku2 = el.getAttribute("data-uc02-prod");
+      var p2 = BY_SKU[sku2];
+      if (p2) {
+        demoState.uc02.activity.unshift({ event: 'ViewContent', label: name(p2), ts: Date.now() });
+        rerenderDemo(); ucsplitPulse();
+      }
+      return;
+    }
+    if (el.hasAttribute("data-uc02-replay")) {
+      e.preventDefault();
+      demoState.uc02 = { step: 2, category: 'women', gender: 'female',
+        brands: [], colours: [], sizes: [], subcats: [],
+        activity: [], done: false, name: '', email: '', animate: false,
+        tab: 'profile', prevFieldKeys: [] };
       rerenderDemo(); return;
     }
     if (el.hasAttribute("data-uc02-remove")) {
@@ -2443,15 +2501,12 @@
       else if (rmGroup === "colour") { var rci = demoState.uc02.colours.indexOf(rmVal); if (rci >= 0) demoState.uc02.colours.splice(rci, 1); }
       else if (rmGroup === "size") { var rsi = demoState.uc02.sizes.indexOf(rmVal); if (rsi >= 0) demoState.uc02.sizes.splice(rsi, 1); }
       else if (rmGroup === "subcat") { var rsci = demoState.uc02.subcats.indexOf(rmVal); if (rsci >= 0) demoState.uc02.subcats.splice(rsci, 1); }
-      else if (rmGroup === "gender") { demoState.uc02.gender = null; }
-      else if (rmGroup === "price") { demoState.uc02.price = ""; }
       rerenderDemo(); return;
     }
     if (el.hasAttribute("data-uc02-clear")) {
       e.preventDefault();
       if (!demoState.uc02) return;
-      demoState.uc02.subcats = []; demoState.uc02.brands = []; demoState.uc02.colours = [];
-      demoState.uc02.sizes = []; demoState.uc02.gender = null; demoState.uc02.price = "";
+      demoState.uc02.brands = []; demoState.uc02.colours = []; demoState.uc02.sizes = []; demoState.uc02.subcats = [];
       rerenderDemo(); return;
     }
   });
@@ -2476,6 +2531,24 @@
       demoState.uc01Animate = true;
       demoState.ucActTab = "profile";
       rerenderDemo();
+      ucsplitPulse();
+    }
+    if (e.target.matches("[data-uc02-signup]")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      var nameEl2 = e.target.querySelector('input[name="name"]');
+      var emailEl2 = e.target.querySelector('input[type="email"]');
+      var n2 = (nameEl2 && nameEl2.value.trim()) ? nameEl2.value.trim() : 'Friend';
+      var em2 = (emailEl2 && emailEl2.value.trim()) ? emailEl2.value.trim() : '';
+      if (em2 && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(em2, true); } catch(x) {} }
+      demoState.uc02.done = true;
+      demoState.uc02.name = n2;
+      demoState.uc02.email = em2;
+      demoState.uc02.animate = true;
+      demoState.uc02.activity.unshift({ event: 'EmailOptIn', label: em2 || n2, ts: Date.now() });
+      demoState.uc02.tab = 'profile';
+      rerenderDemo();
+      ucsplitPulse();
     }
   });
   function rerenderDemo() {
