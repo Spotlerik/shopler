@@ -511,20 +511,13 @@
     f.colours.forEach(function (c) { chips.push(chip("colour", c, c)); });
     if (f.price) chips.push(chip("price", f.price, priceLabel(f.price)));
 
-    function fopts(group, values, sel) {
-      return values.map(function (v) {
-        var checked = sel.indexOf(v) >= 0 ? " checked" : "";
-        return '<label><input type="checkbox" data-filter="' + group + '" value="' + esc(v) + '"' + checked + '>' + esc(v) + "</label>";
-      }).join("");
-    }
-
     return '<div class="wrap">' +
       '<nav class="breadcrumb"><a href="#/">Shopler</a> / ' + esc(title) + '</nav>' +
       '<h1 class="page-title">' + esc(title) + '</h1>' +
       '<div class="listing">' +
         '<aside class="filters">' +
-          '<h3>' + esc(t("f_brand")) + '</h3><div class="fgroup">' + fopts("brand", brands, f.brands) + '</div>' +
-          '<h3>' + esc(t("f_colour")) + '</h3><div class="fgroup">' + fopts("colour", colours, f.colours) + '</div>' +
+          listingFacetGroup(t("f_brand"), brands, "brand", f.brands, "data-filter") +
+          listingFacetGroup(t("f_colour"), colours, "colour", f.colours, "data-filter") +
           '<h3>' + esc(t("f_price")) + '</h3><div class="fgroup">' +
             priceRadio("", t("view_all"), f.price) +
             priceRadio("u50", "< " + money(50), f.price) +
@@ -1469,7 +1462,14 @@
     '</div>';
   }
 
-  /* --- Shared: Spotler Activate 360° profile panel (ucact-*) --- */
+  /* --- Shared: Spotler Activate 360° profile panel (ucact-*) ---
+   * Extra opts for non-UC01 variants (all optional; UC01 ignores them):
+   *   tabAttr      — attribute on tab buttons (default "data-uc01-tab")
+   *   systemFields — {fields:[{key,val,date}], prevKeys:[]} → live system fields with dates
+   *   contactRows  — [{key,val,dim}] → replaces default name/email/optIn rows
+   *   eventCount   — number → event counter in Activity tab instead of EmailOptIn item
+   *   previewNote  — string → italic hint at bottom of panel
+   */
   function ucactProfile(opts) {
     var done = !!opts.done;
     var typedName = opts.name || "";
@@ -1478,6 +1478,7 @@
     var animate = !!opts.animate;
     var extraTabs = opts.extraTabs || [];   // [{id, label, content}] — UC03 et al.
     var showSearch = opts.showSearch !== false;
+    var tabAttr = opts.tabAttr || "data-uc01-tab";
 
     var hdrBar = '<div class="ucact-hdrbar">' +
       '<span class="ucact-hdrbar__wordmark">' +
@@ -1500,36 +1501,85 @@
       ? '<span class="ucact-tag ucact-tag--known' + (animate ? " ucact-seq ucact-seq--chip" : "") + '">Known</span>'
       : '<span class="ucact-tag ucact-tag--anon">Anonymous</span>';
 
-    var contactRowsHTML = done
-      ? [
-          { key: "First name", val: typedName, delay: "0ms" },
-          { key: "Email", val: typedEmail, delay: "80ms" },
-          { key: "EmailOptIn", val: "Yes", delay: "160ms" }
-        ].map(function (f) {
-          return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
-            (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
-            '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
-            '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
-        }).join("")
-      : '<p class="ucact-empty">No fields found.</p>';
+    // System section — live fields with date column when systemFields opt provided.
+    var sysContent;
+    if (opts.systemFields) {
+      var sf = opts.systemFields, pk = sf.prevKeys || [];
+      sysContent = sf.fields.length === 0
+        ? '<p class="ucact-empty">No fields found.</p>'
+        : '<div class="uc02-system-section">' +
+            '<div class="uc02-col-date-hdr"><span>Field</span><span>Date</span></div>' +
+            sf.fields.map(function(fi) {
+              var isNew = pk.indexOf(fi.key) < 0;
+              return '<div class="uc02-sysfield' + (isNew ? ' uc02-sysfield--new' : '') + '">' +
+                '<div class="uc02-sysfield__left">' +
+                  '<span class="uc02-sysfield__key">' + esc(fi.key) + '</span>' +
+                  '<span class="uc02-sysfield__val">' + esc(fi.val) + '</span>' +
+                '</div>' +
+                '<span class="uc02-sysfield__date">' + esc(fi.date) + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+    } else {
+      sysContent = '<p class="ucact-empty">No fields found.</p>';
+    }
+
+    // Contact section — caller-supplied rows or default name/email/optIn rows.
+    var contactRowsHTML;
+    if (opts.contactRows) {
+      contactRowsHTML = opts.contactRows.map(function(r) {
+        return '<div class="ucact-field">' +
+          '<span class="ucact-field__key">' + esc(r.key) + '</span>' +
+          '<span class="ucact-field__val' + (r.dim ? ' uc02-unknown' : '') + '">' + esc(r.val || '') + '</span>' +
+        '</div>';
+      }).join('') || '<p class="ucact-empty">No fields found.</p>';
+    } else {
+      contactRowsHTML = done
+        ? [
+            { key: "First name", val: typedName, delay: "0ms" },
+            { key: "Email", val: typedEmail, delay: "80ms" },
+            { key: "EmailOptIn", val: "Yes", delay: "160ms" }
+          ].map(function (f) {
+            return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
+              (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
+              '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
+              '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
+          }).join("")
+        : '<p class="ucact-empty">No fields found.</p>';
+    }
 
     var profileContent =
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div><p class="ucact-empty">No fields found.</p></div>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' + sysContent + '</div>' +
       '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>' +
       '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>';
 
-    var actHTML = done
-      ? '<div class="ucact-activity">' +
-          '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
-            '<span class="ucact-activity__icon">\u2709</span>' +
-            '<div class="ucact-activity__body">' +
-              '<span class="ucact-activity__label">EmailOptIn</span>' +
-              '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+    // Activity tab \u2014 event counter (UC02) or EmailOptIn item (UC01 default).
+    var actHTML;
+    if (opts.eventCount != null) {
+      var ec = opts.eventCount;
+      actHTML = '<div class="ucact-activity">' +
+        (ec > 0
+          ? '<div class="ucact-activity__item"><span class="ucact-activity__icon">\u26a1</span>' +
+              '<div class="ucact-activity__body">' +
+                '<span class="ucact-activity__label">Filter interactions</span>' +
+                '<span class="ucact-activity__sub">' + ec + ' event' + (ec !== 1 ? 's' : '') + '</span>' +
+              '</div></div>'
+          : '<p class="ucact-empty" style="padding:12px 0">No activity yet.</p>') +
+      '</div>';
+    } else {
+      actHTML = done
+        ? '<div class="ucact-activity">' +
+            '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
+              '<span class="ucact-activity__icon">\u2709</span>' +
+              '<div class="ucact-activity__body">' +
+                '<span class="ucact-activity__label">EmailOptIn</span>' +
+                '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+              '</div>' +
+              '<span class="ucact-activity__time">just now</span>' +
             '</div>' +
-            '<span class="ucact-activity__time">just now</span>' +
-          '</div>' +
-        '</div>'
-      : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+          '</div>'
+        : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+    }
 
     var extraTabMatch = extraTabs.filter(function (et) { return et.id === activeTab; })[0];
     var tabContent = extraTabMatch ? extraTabMatch.content : (activeTab === "activity" ? actHTML : profileContent);
@@ -1544,11 +1594,12 @@
           '<div class="ucact-profile-meta">' + nameEl + emailEl + chipEl + '</div>' +
         '</div>' +
         '<div class="ucact-tabs">' +
-          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" data-uc01-tab="profile">Profile</button>' +
-          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" data-uc01-tab="activity">Activity</button>' +
-          extraTabs.map(function (et) { return '<button class="ucact-tab' + (activeTab === et.id ? " is-active" : "") + '" data-uc01-tab="' + esc(et.id) + '">' + esc(et.label) + '</button>'; }).join('') +
+          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" ' + tabAttr + '="profile">Profile</button>' +
+          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" ' + tabAttr + '="activity">Activity</button>' +
+          extraTabs.map(function (et) { return '<button class="ucact-tab' + (activeTab === et.id ? " is-active" : "") + '" ' + tabAttr + '="' + esc(et.id) + '">' + esc(et.label) + '</button>'; }).join('') +
         '</div>' +
         '<div class="ucact-tab-content">' + tabContent + '</div>' +
+        (opts.previewNote ? '<p class="uc02-preview-note">' + esc(opts.previewNote) + '</p>' : '') +
       '</div>';
   }
 
@@ -1916,91 +1967,13 @@
     return fields;
   }
 
-  function uc02ActivatePanel(st, fields, prevKeys, today) {
-    var hdrBar = '<div class="ucact-hdrbar">' +
-      '<span class="ucact-hdrbar__wordmark">' +
-        '<span class="ucact-hdrbar__spotler">spotler</span>' +
-        '<span class="ucact-hdrbar__activate">activate</span>' +
-      '</span>' +
+  function listingFacetGroup(label, items, group, checked, filterAttr) {
+    return '<h3>' + esc(label) + '</h3><div class="fgroup">' +
+      items.map(function(v) {
+        var c = checked.indexOf(v) >= 0;
+        return '<label><input type="checkbox" ' + filterAttr + '="' + group + '" value="' + esc(v) + '"' + (c ? ' checked' : '') + '>' + esc(v) + '</label>';
+      }).join('') +
     '</div>';
-
-    var avatarHTML = '<div class="ucact-avatar ucact-avatar--anon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor" opacity=".45"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" fill="currentColor" opacity=".45"/></svg></div>';
-
-    var sysFieldsHTML;
-    if (fields.length === 0) {
-      sysFieldsHTML = '<p class="ucact-empty">No fields found.</p>';
-    } else {
-      sysFieldsHTML = '<div class="uc02-system-section">' +
-        '<div class="uc02-col-date-hdr"><span>Field</span><span>Date</span></div>' +
-        fields.map(function(f) {
-          var isNew = prevKeys.indexOf(f.key) < 0;
-          return '<div class="uc02-sysfield' + (isNew ? ' uc02-sysfield--new' : '') + '">' +
-            '<div class="uc02-sysfield__left">' +
-              '<span class="uc02-sysfield__key">' + esc(f.key) + '</span>' +
-              '<span class="uc02-sysfield__val">' + esc(f.val) + '</span>' +
-            '</div>' +
-            '<span class="uc02-sysfield__date">' + esc(f.date) + '</span>' +
-          '</div>';
-        }).join('') +
-      '</div>';
-    }
-
-    var genderVal = st.gender ? st.gender.charAt(0).toUpperCase() + st.gender.slice(1) : null;
-    var genderRowHTML = '<div class="ucact-field">' +
-      '<span class="ucact-field__key">Gender</span>' +
-      '<span class="ucact-field__val' + (genderVal ? '' : ' uc02-unknown') + '">' + esc(genderVal || 'Unknown') + '</span>' +
-    '</div>';
-
-    var profileContent =
-      '<div class="ucact-section">' +
-        '<div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' +
-        sysFieldsHTML +
-      '</div>' +
-      '<div class="ucact-section">' +
-        '<div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div>' +
-        '<p class="ucact-empty">No fields found.</p>' +
-      '</div>' +
-      '<div class="ucact-section">' +
-        '<div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' +
-        genderRowHTML +
-      '</div>';
-
-    var eventCount = st.eventCount || 0;
-    var actHTML = '<div class="ucact-activity">' +
-      (eventCount > 0
-        ? '<div class="ucact-activity__item">' +
-            '<span class="ucact-activity__icon">⚡</span>' +
-            '<div class="ucact-activity__body">' +
-              '<span class="ucact-activity__label">Filter interactions</span>' +
-              '<span class="ucact-activity__sub">' + eventCount + ' event' + (eventCount !== 1 ? 's' : '') + '</span>' +
-            '</div>' +
-          '</div>'
-        : '<p class="ucact-empty" style="padding:12px 0">No activity yet.</p>') +
-    '</div>';
-
-    var activeTab = st.tab || "profile";
-    var tabContent = activeTab === "activity" ? actHTML : profileContent;
-
-    return hdrBar +
-      '<div class="ucact-main">' +
-        '<div class="ucact-topbar">' +
-          '<span class="ucact-topbar__title">Customer 360°</span>' +
-          '<div class="ucact-topbar__search"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search customers…</div>' +
-        '</div>' +
-        '<div class="ucact-profile-hdr">' + avatarHTML +
-          '<div class="ucact-profile-meta">' +
-            '<p class="ucact-profile-name">Unknown visitor</p>' +
-            '<p class="ucact-profile-email ucact-cookie-id">Session: a3f2c9d1</p>' +
-            '<span class="ucact-tag ucact-tag--anon">Anonymous</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="ucact-tabs">' +
-          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" data-uc02-tab="profile">Profile</button>' +
-          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" data-uc02-tab="activity">Activity</button>' +
-        '</div>' +
-        '<div class="ucact-tab-content">' + tabContent + '</div>' +
-        '<p class="uc02-preview-note">Apply filters on the right → watch the profile update live.</p>' +
-      '</div>';
   }
 
   var UC02_SIZE_ORDER = ["28","30","32","34","36","37","38","39","40","41","42","44","S","M","L","XL","One size"];
@@ -2057,15 +2030,6 @@
       ? '<div class="chiprow">' + chips.join("") + '<button class="linkbtn" data-uc02-clear>Clear all</button></div>'
       : '';
 
-    function uc02Facet(title, items, group, checked) {
-      return '<h3>' + esc(title) + '</h3><div class="fgroup">' +
-        items.map(function(v) {
-          var c = checked.indexOf(v) >= 0;
-          return '<label><input type="checkbox" data-uc02-filter="' + group + '" value="' + esc(v) + '"' + (c ? ' checked' : '') + '>' + esc(v) + '</label>';
-        }).join('') +
-      '</div>';
-    }
-
     var genderSection = '<h3>Gender</h3><div class="fgroup">' +
       ['women','men'].map(function(g) {
         return '<label><input type="radio" name="uc02-gender" data-uc02-gender value="' + g + '"' + (st.gender === g ? ' checked' : '') + '>' + g.charAt(0).toUpperCase() + g.slice(1) + '</label>';
@@ -2082,10 +2046,10 @@
     '</div>';
 
     var sidebarHTML = '<aside class="filters">' +
-      uc02Facet("Brand", fBrands, "brand", st.brands) +
-      uc02Facet("Colour", fColours, "colour", st.colours) +
-      (fSizes.length ? uc02Facet("Size", fSizes, "size", st.sizes) : '') +
-      (fSubcats.length > 1 ? uc02Facet("Category", fSubcats, "subcat", st.subcats) : '') +
+      listingFacetGroup("Brand", fBrands, "brand", st.brands, "data-uc02-filter") +
+      listingFacetGroup("Colour", fColours, "colour", st.colours, "data-uc02-filter") +
+      (fSizes.length ? listingFacetGroup("Size", fSizes, "size", st.sizes, "data-uc02-filter") : '') +
+      (fSubcats.length > 1 ? listingFacetGroup("Category", fSubcats, "subcat", st.subcats, "data-uc02-filter") : '') +
       genderSection +
       priceSection +
     '</aside>';
@@ -2185,7 +2149,17 @@
       var fields = uc02DeriveFields(st, today);
       var prevKeys = (st.prevFieldKeys || []).slice();
       st.prevFieldKeys = fields.map(function(f) { return f.key; });
-      return ucsplitShell(uc02ActivatePanel(st, fields, prevKeys, today), uc02Listing(st));
+      var genderVal = st.gender ? st.gender.charAt(0).toUpperCase() + st.gender.slice(1) : null;
+      var leftHTML = ucactProfile({
+        tabAttr: "data-uc02-tab",
+        tab: st.tab,
+        showSearch: false,
+        systemFields: { fields: fields, prevKeys: prevKeys },
+        contactRows: [{ key: "Gender", val: genderVal || "Unknown", dim: !genderVal }],
+        eventCount: st.eventCount || 0,
+        previewNote: "Apply filters on the right → watch the profile update live."
+      });
+      return ucsplitShell(leftHTML, uc02Listing(st));
     },
     "rt-segmentation": function (u) {
       if (!demoState.uc03) {
