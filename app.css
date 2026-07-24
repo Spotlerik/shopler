@@ -430,6 +430,24 @@ select{font:inherit;font-size:var(--text-sm);padding:var(--space-2) var(--space-
 .demo-caption__note{font-size:var(--text-xs);color:var(--stone-400);border-top:1px solid rgba(255,255,255,.15);padding-top:var(--space-3);margin-bottom:var(--space-3)}
 .demo-caption__nav{display:flex;justify-content:space-between;gap:var(--space-2)}
 .demo-caption__nav a{color:#fff;font-size:var(--text-sm);text-decoration:none;background:rgba(255,255,255,.1);border-radius:var(--r-sm);padding:5px 10px}
+/* In-pane guide card (UC01 only) — floats over the Activate left panel */
+.demo-caption--inpane{position:absolute;bottom:10px;left:8px;right:8px;z-index:25;background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.1);overflow:hidden}
+.demo-caption--inpane .demo-caption__toggle{position:absolute;top:6px;right:8px;width:22px;height:22px;font-size:12px;background:#e2e8f0;color:#475569;box-shadow:none}
+.demo-caption--inpane .demo-caption__guide-label{font-size:10px;font-weight:700;color:#fff;background:#0a2540;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;padding-right:36px}
+.demo-caption--inpane .demo-caption__body{padding:10px 12px;font-size:12px}
+.demo-caption--inpane .demo-caption__eyebrow{font-size:10px;color:#94a3b8}
+.demo-caption--inpane .demo-caption__name{font-family:var(--font-display);font-size:13px;font-weight:700;color:#0f172a;margin:2px 0 4px}
+.demo-caption--inpane .demo-caption__hook{font-size:11px;color:#475569;margin-bottom:6px}
+.demo-caption--inpane .demo-caption__bench{font-size:11px;color:#0f172a;margin-bottom:6px}
+.demo-caption--inpane .demo-caption__bench b{font-size:12px;color:#0f172a}
+.demo-caption--inpane .demo-caption__illus{font-size:9px;color:#fff;background:#94a3b8;border-radius:var(--r-pill);padding:1px 5px}
+.demo-caption--inpane .demo-caption__point{font-size:11px;color:#475569;margin-bottom:6px}
+.demo-caption--inpane .demo-caption__point span{color:#94a3b8}
+.demo-caption--inpane .demo-caption__note{font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:6px;margin-bottom:6px}
+.demo-caption--inpane .demo-caption__nav{display:flex;justify-content:space-between;gap:4px}
+.demo-caption--inpane .demo-caption__nav a{color:#23afe6;font-size:11px;text-decoration:none;background:#f1f5f9;border-radius:4px;padding:4px 8px}
+.demo-caption--inpane.is-collapsed .demo-caption__body{display:none}
+.demo-caption--inpane.is-collapsed .demo-caption__guide-label{padding-right:36px}
 
 /* hidden index */
 .demo-index__intro{color:var(--stone-600);max-width:60ch;margin-bottom:var(--space-6)}
@@ -442,3 +460,174 @@ select{font:inherit;font-size:var(--text-sm);padding:var(--space-2) var(--space-
 .demo-index__bench{font-weight:var(--w-semibold);color:var(--accent);white-space:nowrap}
 .demo-index__id{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--stone-600);background:var(--surface-sunken);border-radius:var(--r-sm);padding:3px 7px}
 @media(max-width:640px){.demo-index__id{display:none}}
+
+/* btn--sm was missing from base styles; added here for demos that use it */
+.btn--sm{padding:5px 14px;font-size:var(--text-xs)}
+
+/* =====================================================================
+   UC01 – Shared: split-screen shell  (ucsplit-*)
+   ===================================================================== */
+.ucsplit-shell{display:flex;height:100vh;overflow:hidden;background:#e2e8f0}
+.ucsplit-left{width:380px;flex-shrink:0;overflow:hidden;display:flex;flex-direction:column;position:relative;background:#fff;box-shadow:2px 0 10px rgba(0,0,0,.06)}
+.ucsplit-gutter{width:28px;flex-shrink:0;background:#e2e8f0}
+.ucsplit-right{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;background:#f8fafc;box-shadow:-2px 0 10px rgba(0,0,0,.06)}
+@media(max-width:1099px){
+  .ucsplit-shell{flex-direction:column;height:auto;overflow:visible;background:#e2e8f0}
+  .ucsplit-left{width:100%;min-height:420px;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+  .ucsplit-gutter{width:100%;height:24px}
+  .ucsplit-right{height:auto;min-height:600px;overflow:hidden}
+}
+
+/* =====================================================================
+   UC01 – Shared: Activate 360° panel  (ucact-*)
+   ===================================================================== */
+.ucact-hdrbar{background:#0a2540;height:48px;flex-shrink:0;display:flex;align-items:center;padding:0 16px}
+.ucact-hdrbar__wordmark{display:flex;align-items:baseline;gap:2px;line-height:1}
+.ucact-hdrbar__spotler{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.01em}
+.ucact-hdrbar__activate{font-size:17px;font-weight:700;color:#23afe6;letter-spacing:-.01em}
+.ucact-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.ucact-topbar{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0}
+.ucact-topbar__title{font-size:11px;font-weight:700;color:#1a2744;letter-spacing:.02em;text-transform:uppercase}
+.ucact-topbar__search{font-size:11px;color:#94a3b8;background:#e8edf2;border-radius:4px;padding:4px 8px;display:flex;align-items:center;gap:4px}
+.ucact-profile-hdr{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff}
+.ucact-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700}
+.ucact-avatar--known{background:#23afe6;color:#fff}
+.ucact-avatar--anon{background:#e8edf2;color:#94a3b8}
+.ucact-profile-meta{min-width:0;flex:1}
+.ucact-profile-name{font-size:13px;font-weight:600;color:#0f172a;margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ucact-profile-email{font-size:11px;color:#64748b;margin:0 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ucact-cookie-id{font-family:var(--font-mono);font-size:10px;color:#94a3b8;letter-spacing:.02em}
+.ucact-tag{display:inline-block;font-size:10px;font-weight:700;border-radius:3px;padding:2px 6px;letter-spacing:.06em;text-transform:uppercase;line-height:1.4}
+.ucact-tag--anon{background:#f1f5f9;color:#64748b}
+.ucact-tag--known{background:#d1fae5;color:#065f46}
+.ucact-tabs{display:flex;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff}
+.ucact-tab{flex:1;padding:8px 0;font-size:12px;font-weight:500;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px;font-family:inherit}
+.ucact-tab.is-active{color:#23afe6;border-bottom-color:#23afe6;font-weight:600}
+.ucact-tab-content{flex:1;overflow-y:auto;min-height:0}
+.ucact-section{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+.ucact-section__hdr{margin-bottom:6px}
+.ucact-section__title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8}
+.ucact-field{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;gap:8px;font-size:12px}
+.ucact-field__key{color:#64748b;white-space:nowrap}
+.ucact-field__val{font-weight:600;color:#0f172a;text-align:right;word-break:break-all}
+.ucact-empty{font-size:12px;color:#94a3b8;margin:2px 0;font-style:italic}
+.ucact-activity{padding:0 12px}
+.ucact-activity__item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:12px}
+.ucact-activity__icon{width:24px;height:24px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.ucact-activity__body{flex:1;min-width:0}
+.ucact-activity__label{display:block;font-weight:600;color:#0f172a}
+.ucact-activity__sub{display:block;color:#64748b;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ucact-activity__time{color:#94a3b8;font-size:11px;white-space:nowrap;flex-shrink:0}
+
+/* Gutter pulse on submit */
+@keyframes ucsplit-pulse{0%,100%{background:#e2e8f0}50%{background:#23afe6}}
+.uc01-pulse .ucsplit-gutter{animation:ucsplit-pulse .9s ease-out forwards}
+
+/* Sequenced profile fill after submit */
+@keyframes ucact-seq-in{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+.ucact-seq{opacity:0;animation:ucact-seq-in .3s ease-out forwards}
+.ucact-seq--name{animation-delay:.3s}
+.ucact-seq--email{animation-delay:.7s}
+.ucact-seq--chip{animation-delay:1.1s}
+.ucact-seq--contact{animation-delay:calc(1.5s + var(--ucact-cd,0ms))}
+.ucact-seq--activity{animation-delay:1.8s}
+@media(prefers-reduced-motion:reduce){.ucact-seq{animation:none;opacity:1}.uc01-pulse .ucsplit-gutter{animation:none}}
+
+/* =====================================================================
+   UC01 – email-capture page  (uc01-*)
+   ===================================================================== */
+/* Replay: fixed corner (UC01), unobtrusive */
+.uc01-replay{position:fixed;top:12px;right:14px;z-index:35;font-size:11px;padding:4px 10px;border-radius:var(--r-pill);border:1px solid #c9ced4;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;opacity:.75;transition:opacity .15s}
+.uc01-replay:hover{opacity:1}
+/* UC03 replay button lives inside left pane so it never overlaps the right-pane header */
+.uc03-replay-btn{position:absolute;top:10px;right:10px;z-index:10;font-size:11px;padding:4px 10px;border-radius:var(--r-pill);border:1px solid #c9ced4;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;opacity:.75;transition:opacity .15s}
+.uc03-replay-btn:hover{opacity:1}
+
+/* Shopler header reproduced inside right panel */
+.uc01-shopler-hdr{background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+.uc01-shopler-hdr .hdr__row{display:flex;align-items:center;gap:16px;padding:0 16px;height:52px;max-width:none}
+.uc01-shopler-hdr .brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit}
+.uc01-shopler-hdr .nav{display:flex;gap:16px;flex:1;font-size:13px}
+.uc01-shopler-hdr .nav a{color:#475569;text-decoration:none;font-size:13px}
+.uc01-shopler-hdr .nav a.is-active{color:#0f172a;font-weight:600}
+.uc01-shopler-hdr .nav a.is-sale{color:#dc2626}
+.uc01-shopler-hdr .hdr__actions{display:flex;align-items:center;gap:8px}
+.uc01-shopler-hdr .lang{display:flex;gap:1px}
+.uc01-shopler-hdr .lang button{font-size:11px;padding:3px 7px;border:none;background:none;cursor:pointer;color:#94a3b8;font-family:inherit;font-weight:500}
+.uc01-shopler-hdr .lang button.is-active{color:#0f172a;font-weight:700}
+.uc01-shopler-hdr .cart-btn{border:none;background:none;cursor:pointer;padding:4px;color:#475569;position:relative;display:flex}
+.uc01-shopler-hdr .cart-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
+.uc01-shopler-hdr .count{position:absolute;top:-3px;right:-3px;background:var(--accent);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* Right panel inner layout — shopler scrolls, overlay floats above it */
+.uc01-shopler{display:flex;flex-direction:column;flex:1;background:#fff;overflow-y:auto;min-height:0}
+.uc01-shopler-body{flex:1}
+
+/* Overlay: sibling of .uc01-shopler, covers .ucsplit-right viewport */
+.uc01-overlay{position:absolute;inset:0;background:rgba(15,23,42,.52);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.uc01-overlay__card{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.uc01-overlay__title{font-family:var(--font-display);font-size:17px;font-weight:700;color:#0f172a;margin:0 0 8px;line-height:1.2}
+.uc01-overlay__body{font-size:13px;color:#64748b;margin:0 0 16px;line-height:1.5}
+.uc01-signup{display:flex;flex-direction:column;gap:8px}
+.uc01-signup__field{padding:9px 11px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:inherit;width:100%;box-sizing:border-box;outline:none}
+.uc01-signup__field:focus{border-color:#23afe6;box-shadow:0 0 0 2px rgba(35,175,230,.15)}
+.uc01-signup__consent{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#64748b;line-height:1.4;cursor:pointer}
+.uc01-signup__btn{margin-top:4px}
+
+/* Post-submit confirmation */
+.uc01-success{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:300px;padding:32px 20px;text-align:center;gap:12px}
+.uc01-success__check{width:48px;height:48px;border-radius:50%;background:#d1fae5;color:#065f46;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.uc01-success__title{font-family:var(--font-display);font-size:18px;font-weight:700;color:#0f172a;margin:0}
+.uc01-success__body{font-size:13px;color:#64748b;margin:0}
+.uc01-success__note{font-size:11px;color:#94a3b8;margin:0;font-style:italic}
+
+/* ===================================================================
+   UC03 — rt-segmentation  (uc03-*)
+   =================================================================== */
+.uc03-table-wrap{padding:0 12px 8px;overflow-x:auto}
+.uc03-aud-table{width:100%;border-collapse:collapse;font-size:11px}
+.uc03-aud-table th{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;padding:6px 4px 4px;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.uc03-aud-table td{padding:5px 4px;vertical-align:top;border-bottom:1px solid #f1f5f9;font-size:11px}
+.uc03-aud-id{width:20px;color:#94a3b8;font-size:10px}
+.uc03-aud-name{max-width:130px;font-weight:500;color:#0f172a;line-height:1.35}
+.uc03-aud-event{width:85px;color:#64748b;font-size:10px;line-height:1.3}
+.uc03-aud-ret{width:68px;color:#64748b;font-size:10px}
+.uc03-aud-time{width:48px;color:#16a34a;font-size:10px;font-weight:600;white-space:nowrap}
+.uc03-aud-empty{color:#94a3b8;font-style:italic;padding:20px 4px;text-align:center;font-size:12px}
+@keyframes uc03-row-in{0%{background:#dcfce7;opacity:0}15%{opacity:1}100%{background:transparent}}
+.uc03-aud-row--new td{animation:uc03-row-in 2s ease-out forwards}
+@media(prefers-reduced-motion:reduce){.uc03-aud-row--new td{animation:none;background:#dcfce7}}
+
+.uc03-kind{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;font-size:8px;font-weight:800;vertical-align:middle;margin-right:3px;flex-shrink:0}
+.uc03-kind--event{background:#dbeafe;color:#1d4ed8}
+.uc03-kind--profile{background:#fce7f3;color:#9d174d}
+.uc03-kind--intel{background:#f0fdf4;color:#15803d}
+
+.uc03-ret-note{font-size:10px;color:#94a3b8;margin:8px 12px 0;line-height:1.5;font-style:italic;padding:0 0 8px;border-bottom:1px solid #f1f5f9}
+
+.uc03-notmet{padding:8px 12px}
+.uc03-notmet-hdr{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px}
+.uc03-notmet-row{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #f8fafc}
+.uc03-notmet-row:last-child{border-bottom:none;margin-bottom:0}
+.uc03-notmet-name{font-size:11px;color:#475569;font-weight:500;line-height:1.3;margin-bottom:2px}
+.uc03-notmet-progress{font-size:10px;color:#94a3b8}
+
+.uc03-event-counter{padding:5px 12px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0}
+.uc03-event-counter b{color:#0f172a}
+
+/* Right-pane shop content */
+.uc03-shop{display:flex;flex-direction:column;flex:1;overflow-y:auto;min-height:0;background:#f8fafc}
+.uc03-shop-content{padding:14px 16px}
+.uc03-cat-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:#0f172a;margin:0 0 14px}
+.uc03-shop .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.uc03-shop .card__img--lifestyle,.uc03-shop .card__img--packshot{height:120px;object-fit:cover}
+.uc03-home-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.uc03-home-tile{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1/1;cursor:pointer;text-decoration:none}
+.uc03-home-tile img{width:100%;height:100%;object-fit:cover}
+.uc03-home-tile span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-weight:600;padding:6px 8px;text-align:center}
+.uc03-pdp{display:flex;flex-direction:column;gap:10px}
+.uc03-pdp-img{width:100%;border-radius:6px;max-height:200px;object-fit:cover}
+.uc03-pdp-brand{font-size:11px;font-weight:700;letter-spacing:.04em;color:#64748b;text-transform:uppercase}
+.uc03-pdp-name{font-size:15px;font-weight:700;color:#0f172a;margin:2px 0 6px}
+.uc03-back{background:none;border:none;padding:0 0 10px;font-size:12px;color:#64748b;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+.uc03-back:hover{color:#0f172a}

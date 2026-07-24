@@ -1128,6 +1128,8 @@
     else html = viewHome();
     app.innerHTML = html;
     renderChrome();
+    document.getElementById("hdr").hidden = isDemo;
+    document.getElementById("ftr").hidden = isDemo;
     window.scrollTo(0, 0);
     // Re-apply remembered consent on every route BEFORE any event fires
     // (Activate does not persist consent itself).
@@ -1310,7 +1312,8 @@
     PRODUCTS.forEach(function (q) { if (out.length < (n || 4) && q.sku !== p.sku && q.category === p.category && out.indexOf(q) < 0) out.push(q); });
     return out.slice(0, n || 4);
   }
-  function firstName() { return "Sarah"; } // demo persona for recognised-visitor surfaces
+  var DEMO_PERSONA = { first: "Robin", last: "Jansen", full: "Robin Jansen", email: "robin.jansen@example.com" };
+  function firstName() { return DEMO_PERSONA.first; } // demo persona for recognised-visitor surfaces
 
   /* ---------- reusable demo surfaces (Shopler components + styles) ---------- */
   function demoHero(eyebrow, headline, sub, cta) {
@@ -1403,13 +1406,515 @@
       '</aside>';
   }
 
+
+  /* --- UC01 helper: Shopler header reproduced inside right panel --- */
+  function uc01ShoplerHdr() {
+    var hash = location.hash || "#/";
+    function active(h) { return hash.indexOf(h) === 0 ? " is-active" : ""; }
+    return '<div class="uc01-shopler-hdr">' +
+      '<div class="hdr__row">' +
+        '<a class="brand" href="#/" aria-label="Shopler home">' + monogramSVG() + '<span class="wm">Shopler</span></a>' +
+        '<nav class="nav">' +
+          '<a href="#/c/women" class="' + active("#/c/women") + '">' + esc(t("nav_women")) + '</a>' +
+          '<a href="#/c/men"' + (active("#/c/men") ? ' class="is-active"' : "") + '>' + esc(t("nav_men")) + '</a>' +
+          '<a href="#/c/accessories"' + (active("#/c/accessories") ? ' class="is-active"' : "") + '>' + esc(t("nav_accessories")) + '</a>' +
+          '<a href="#/c/sale" class="is-sale">' + esc(t("nav_sale")) + '</a>' +
+        '</nav>' +
+        '<div class="hdr__actions">' +
+          '<div class="lang">' +
+            '<button data-lang="en" class="' + (state.lang === "en" ? "is-active" : "") + '">EN</button>' +
+            '<button data-lang="nl" class="' + (state.lang === "nl" ? "is-active" : "") + '">NL</button>' +
+          '</div>' +
+          '<button class="icon-btn cart-btn" data-open-cart aria-label="' + esc(t("cart")) + '">' +
+            '<svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>' +
+            (cartCount() ? '<span class="count">' + cartCount() + "</span>" : "") +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* --- Shared: Spotler Activate 360° profile panel (ucact-*) --- */
+  function ucactProfile(opts) {
+    var done = !!opts.done;
+    var typedName = opts.name || "";
+    var typedEmail = opts.email || "";
+    var activeTab = opts.tab || "profile";
+    var animate = !!opts.animate;
+    var extraTabs = opts.extraTabs || [];   // [{id, label, content}] — UC03 et al.
+    var showSearch = opts.showSearch !== false;
+
+    var hdrBar = '<div class="ucact-hdrbar">' +
+      '<span class="ucact-hdrbar__wordmark">' +
+        '<span class="ucact-hdrbar__spotler">spotler</span>' +
+        '<span class="ucact-hdrbar__activate">activate</span>' +
+      '</span>' +
+    '</div>';
+
+    var avatarHTML = done
+      ? '<div class="ucact-avatar ucact-avatar--known">' + esc(typedName ? typedName[0].toUpperCase() : "?") + '</div>'
+      : '<div class="ucact-avatar ucact-avatar--anon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor" opacity=".45"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" fill="currentColor" opacity=".45"/></svg></div>';
+
+    var nameEl = done
+      ? '<p class="ucact-profile-name' + (animate ? " ucact-seq ucact-seq--name" : "") + '">' + esc(typedName) + '</p>'
+      : '<p class="ucact-profile-name">Unknown visitor</p>';
+    var emailEl = done
+      ? '<p class="ucact-profile-email' + (animate ? " ucact-seq ucact-seq--email" : "") + '">' + esc(typedEmail) + '</p>'
+      : '<p class="ucact-profile-email ucact-cookie-id">Session: a3f2c9d1</p>';
+    var chipEl = done
+      ? '<span class="ucact-tag ucact-tag--known' + (animate ? " ucact-seq ucact-seq--chip" : "") + '">Known</span>'
+      : '<span class="ucact-tag ucact-tag--anon">Anonymous</span>';
+
+    var contactRowsHTML = done
+      ? [
+          { key: "First name", val: typedName, delay: "0ms" },
+          { key: "Email", val: typedEmail, delay: "80ms" },
+          { key: "EmailOptIn", val: "Yes", delay: "160ms" }
+        ].map(function (f) {
+          return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
+            (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
+            '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
+            '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
+        }).join("")
+      : '<p class="ucact-empty">No fields found.</p>';
+
+    var profileContent =
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div><p class="ucact-empty">No fields found.</p></div>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>';
+
+    var actHTML = done
+      ? '<div class="ucact-activity">' +
+          '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
+            '<span class="ucact-activity__icon">\u2709</span>' +
+            '<div class="ucact-activity__body">' +
+              '<span class="ucact-activity__label">EmailOptIn</span>' +
+              '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+            '</div>' +
+            '<span class="ucact-activity__time">just now</span>' +
+          '</div>' +
+        '</div>'
+      : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+
+    var extraTabMatch = extraTabs.filter(function (et) { return et.id === activeTab; })[0];
+    var tabContent = extraTabMatch ? extraTabMatch.content : (activeTab === "activity" ? actHTML : profileContent);
+
+    return hdrBar +
+      '<div class="ucact-main">' +
+        '<div class="ucact-topbar">' +
+          '<span class="ucact-topbar__title">Customer 360\u00b0</span>' +
+          (showSearch ? '<div class="ucact-topbar__search"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>\u00a0Search customers\u2026</div>' : '') +
+        '</div>' +
+        '<div class="ucact-profile-hdr">' + avatarHTML +
+          '<div class="ucact-profile-meta">' + nameEl + emailEl + chipEl + '</div>' +
+        '</div>' +
+        '<div class="ucact-tabs">' +
+          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" data-uc01-tab="profile">Profile</button>' +
+          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" data-uc01-tab="activity">Activity</button>' +
+          extraTabs.map(function (et) { return '<button class="ucact-tab' + (activeTab === et.id ? " is-active" : "") + '" data-uc01-tab="' + esc(et.id) + '">' + esc(et.label) + '</button>'; }).join('') +
+        '</div>' +
+        '<div class="ucact-tab-content">' + tabContent + '</div>' +
+      '</div>';
+  }
+
+  /* --- Shared: split-screen shell (ucsplit-*) --- */
+  function ucsplitShell(leftHTML, rightHTML) {
+    return '<div class="ucsplit-shell"><div class="ucsplit-left">' + leftHTML + '</div><div class="ucsplit-right">' + rightHTML + '</div></div>';
+  }
+
+  /* ============================================================
+     UC03 — rt-segmentation helpers
+     ============================================================ */
+  var uc03Timer = null;
+
+  function uc03InitState() {
+    return {
+      viewContents:   [],  // [{sku, brand, category, ts}]
+      viewCategories: [],  // [{cat, ts}]
+      addToCarts:     [],  // [{sku, ts}]
+      enteredAt:      {},  // audienceId -> timestamp of first match
+      newlyMet:       {},  // audienceId -> bool (true for one render cycle)
+      route:          null // {type:'category',cat} | {type:'product',sku} | null
+    };
+  }
+
+  // Audience definitions with live rule evaluation.
+  function uc03AudienceState(s) {
+    var vc   = s.viewContents   || [];
+    var vcat = s.viewCategories || [];
+    var ac   = s.addToCarts     || [];
+    var lang = state.lang; // use live state — lang toggle calls render() which re-evaluates
+
+    // Brand with highest ViewContent count
+    var brandCounts = {};
+    vc.forEach(function (v) { brandCounts[v.brand] = (brandCounts[v.brand] || 0) + 1; });
+    var topBrand = null, topBrandCount = 0;
+    Object.keys(brandCounts).forEach(function (b) {
+      if (brandCounts[b] > topBrandCount) { topBrandCount = brandCounts[b]; topBrand = b; }
+    });
+
+    // Customer Phase thresholds (documented): 1 SessionStart = always Orientation.
+    // Comparison: ≥3 ViewContent. Decision: ≥5 ViewContent.
+    var vcCount = vc.length;
+    var phase = vcCount >= 5 ? 'Decision' : vcCount >= 3 ? 'Comparison' : 'Orientation';
+
+    // Retention date (7 days) for event-based audiences
+    var retDate = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+    var ret7 = retDate.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
+
+    var audiences = [
+      {
+        id: 'view-category', kind: 'event',
+        label: 'ViewContent or ViewCategory in Category',
+        trigger: 'ViewContent / ViewCategory',
+        retention: ret7,
+        met: vc.length > 0 || vcat.length > 0
+      },
+      {
+        id: '3x-category', kind: 'event',
+        label: '3× Category Viewed Last 7 Days',
+        trigger: 'ViewCategory ×3',
+        retention: ret7,
+        met: vcat.length >= 3
+      },
+      {
+        id: '3x-brand', kind: 'event',
+        label: '3× Brand Viewed Last 7 Days',
+        trigger: 'ViewContent ×3 (same brand)',
+        retention: ret7,
+        met: topBrandCount >= 3
+      },
+      {
+        id: '3x-viewcontent', kind: 'event',
+        label: '3× ViewContent Last 7 Days',
+        trigger: 'ViewContent ×3',
+        retention: ret7,
+        met: vcCount >= 3
+      },
+      {
+        id: '2x-addtocart', kind: 'event',
+        label: '2× AddToCart Last 7 Days',
+        trigger: 'AddToCart ×2',
+        retention: ret7,
+        met: ac.length >= 2
+      },
+      {
+        id: 'country-nl', kind: 'profile',
+        label: 'Country NL and Language Dutch',
+        trigger: 'Profile field: Language',
+        retention: '—',
+        met: lang === 'nl'
+      },
+      {
+        id: 'profiles-email', kind: 'profile',
+        label: 'Profiles with Email',
+        trigger: 'EmailOptIn / Purchase',
+        retention: '—',
+        met: false // browsing alone cannot supply an email
+      },
+      {
+        id: 'customer-phase', kind: 'intelligent',
+        label: 'Customer Phase: ' + phase,
+        trigger: 'SessionStart / ViewContent',
+        retention: '—',
+        // Becomes visible after the first browsing action (1 session + first view = Orientation confirmed)
+        met: vcCount > 0 || vcat.length > 0,
+        phase: phase
+      }
+    ];
+
+    return {
+      audiences:      audiences,
+      met:            audiences.filter(function (a) { return a.met; }),
+      unmet:          audiences.filter(function (a) { return !a.met; }),
+      vcCount:        vcCount,
+      vcatCount:      vcat.length,
+      acCount:        ac.length,
+      topBrand:       topBrand,
+      topBrandCount:  topBrandCount,
+      phase:          phase
+    };
+  }
+
+  // Update enteredAt: stamp new entries, remove stale ones (profile-based can exit).
+  function uc03CheckAudiences(s) {
+    var now = Date.now();
+    var audSt = uc03AudienceState(s);
+    var metIds = {};
+    audSt.met.forEach(function (a) {
+      metIds[a.id] = true;
+      if (!s.enteredAt[a.id]) {
+        s.enteredAt[a.id] = now;
+        s.newlyMet[a.id] = true;
+      }
+    });
+    Object.keys(s.enteredAt).forEach(function (id) {
+      if (!metIds[id]) delete s.enteredAt[id];
+    });
+    // Clear newlyMet flags after one render cycle
+    Object.keys(s.newlyMet).forEach(function (id) {
+      if (!s.enteredAt[id]) delete s.newlyMet[id];
+    });
+  }
+
+  function uc03RelTime(ts) {
+    var sec = Math.floor((Date.now() - ts) / 1000);
+    if (sec < 5)  return 'just now';
+    if (sec < 60) return sec + 's ago';
+    return Math.floor(sec / 60) + 'm ago';
+  }
+
+  function uc03KindBadge(kind) {
+    var map = { event: 'E', profile: 'P', intelligent: 'I' };
+    return '<span class="uc03-kind uc03-kind--' + kind + '" title="' +
+      (kind === 'event' ? 'Event-based' : kind === 'profile' ? 'Profile-based' : 'Intelligent') +
+      '">' + (map[kind] || kind[0].toUpperCase()) + '</span>';
+  }
+
+  function uc03AudiencesTabContent(s) {
+    var audSt = uc03AudienceState(s);
+
+    // Matched table
+    var matchedRows = audSt.met.map(function (a, i) {
+      var isNew = !!s.newlyMet[a.id];
+      return '<tr class="uc03-aud-row' + (isNew ? ' uc03-aud-row--new' : '') + '" data-aud-id="' + esc(a.id) + '">' +
+        '<td class="uc03-aud-id">' + String(i + 1).padStart(2, '0') + '</td>' +
+        '<td class="uc03-aud-name">' + uc03KindBadge(a.kind) + esc(a.label) + '</td>' +
+        '<td class="uc03-aud-event">' + esc(a.trigger) + '</td>' +
+        '<td class="uc03-aud-ret">' + esc(a.retention) + '</td>' +
+        '<td class="uc03-aud-time">' + (s.enteredAt[a.id] ? esc(uc03RelTime(s.enteredAt[a.id])) : 'just now') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    var emptyRow = audSt.met.length === 0
+      ? '<tr><td colspan="5" class="uc03-aud-empty">No audiences matched yet — browse the shop →</td></tr>'
+      : '';
+
+    var tableHTML =
+      '<div class="uc03-table-wrap">' +
+        '<table class="uc03-aud-table">' +
+          '<thead><tr><th>ID</th><th>Audience</th><th>Event</th><th>Retention expiry</th><th>Entered</th></tr></thead>' +
+          '<tbody>' + emptyRow + matchedRows + '</tbody>' +
+        '</table>' +
+        '<p class="uc03-ret-note">Event-based audiences release the profile when retention lapses — the audience maintains itself in both directions.</p>' +
+      '</div>';
+
+    // Progress text per unmet audience
+    function progressNote(a) {
+      if (a.id === 'view-category')    return 'Open any category or product page';
+      if (a.id === '3x-category')      return audSt.vcatCount + ' of 3 categories viewed';
+      if (a.id === '3x-brand') {
+        return audSt.topBrand
+          ? audSt.topBrandCount + ' of 3 ' + audSt.topBrand + ' products viewed'
+          : '0 of 3 same-brand products viewed';
+      }
+      if (a.id === '3x-viewcontent')   return audSt.vcCount + ' of 3 products viewed';
+      if (a.id === '2x-addtocart')     return audSt.acCount + ' of 2 items added to cart';
+      if (a.id === 'country-nl')       return 'Switch shop to Dutch via the NL toggle';
+      if (a.id === 'profiles-email')   return 'Requires an email address — browsing cannot supply one';
+      if (a.id === 'customer-phase')   return 'Browse to enter Orientation phase (1 session start tracked)';
+      return '';
+    }
+
+    var notMetRows = audSt.unmet.map(function (a) {
+      return '<div class="uc03-notmet-row">' +
+        '<div class="uc03-notmet-name">' + uc03KindBadge(a.kind) + esc(a.label) + '</div>' +
+        '<div class="uc03-notmet-progress">' + esc(progressNote(a)) + '</div>' +
+      '</div>';
+    }).join('');
+
+    var notMetHTML = notMetRows
+      ? '<div class="uc03-notmet"><div class="uc03-notmet-hdr">Not yet matched</div>' + notMetRows + '</div>'
+      : '';
+
+    var totalEvents = (s.viewContents.length) + (s.viewCategories.length) + (s.addToCarts.length);
+    var counterHTML = '<div class="uc03-event-counter">Live events fired: <b>' + totalEvents + '</b></div>';
+
+    return tableHTML + notMetHTML + counterHTML;
+  }
+
+  // Right pane: actual shop content with intercepted navigation
+  function uc03RightPane(s) {
+    var route = s.route;
+    var contentHTML;
+
+    if (route && route.type === 'product') {
+      var p = BY_SKU[route.sku];
+      if (p) {
+        var st = stockState(p);
+        contentHTML =
+          '<div class="uc03-shop-content">' +
+            '<button class="uc03-back" data-uc03-nav="#/c/' + esc((p.category || 'women').toLowerCase()) + '">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>' +
+              esc(p.category) +
+            '</button>' +
+            '<div class="uc03-pdp">' +
+              '<img class="uc03-pdp-img" src="' + esc(img(p.image_lifestyle)) + '" alt="">' +
+              '<div>' +
+                '<div class="uc03-pdp-brand">' + esc(p.brand) + '</div>' +
+                '<div class="uc03-pdp-name">' + esc(name(p)) + '</div>' +
+                priceHTML(p, false) +
+                (st !== 'sold'
+                  ? '<button class="btn btn--block" style="margin-top:12px" data-add="' + esc(p.sku) + '" data-uc03-atc="' + esc(p.sku) + '">' + esc(t('add_to_cart')) + '</button>'
+                  : '<button class="btn btn--block" disabled style="margin-top:12px">' + esc(t('sold_out')) + '</button>') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        contentHTML = '<div class="uc03-shop-content"><p style="color:#94a3b8">Product not found.</p></div>';
+      }
+    } else if (route && route.type === 'category') {
+      var cat = route.cat;
+      var catLabel = cat === 'women' ? t('nav_women') : cat === 'men' ? t('nav_men')
+        : cat === 'accessories' ? t('nav_accessories') : cat === 'sale' ? t('on_sale')
+        : cat.charAt(0).toUpperCase() + cat.slice(1);
+      var prods = productsForView(cat);
+      var cardLinks = '<div class="grid">' + prods.slice(0, 12).map(function (p2) {
+        return '<article class="card">' +
+          '<a class="card__media" href="#" data-uc03-nav="#/product/' + esc(p2.sku) + '">' +
+            '<img class="card__img--lifestyle" src="' + esc(img(p2.image_lifestyle)) + '" alt="' + esc(name(p2)) + '" loading="lazy">' +
+            '<img class="card__img--packshot" src="' + esc(img(p2.image)) + '" alt="" aria-hidden="true" loading="lazy">' +
+          '</a>' +
+          '<div class="card__body">' +
+            '<a href="#" data-uc03-nav="#/product/' + esc(p2.sku) + '">' +
+              '<div class="card__brand">' + esc(p2.brand) + '</div>' +
+              '<div class="card__name">' + esc(name(p2)) + '</div>' +
+            '</a>' +
+            priceHTML(p2) +
+          '</div>' +
+        '</article>';
+      }).join('') + '</div>';
+      contentHTML = '<div class="uc03-shop-content"><h2 class="uc03-cat-title">' + esc(catLabel) + '</h2>' + cardLinks + '</div>';
+    } else {
+      // Home: tiles + top products
+      var cats = ['women', 'men', 'accessories'];
+      var tiles = '<div class="uc03-home-tiles">' + cats.map(function (c) {
+        var label = c === 'women' ? t('nav_women') : c === 'men' ? t('nav_men') : t('nav_accessories');
+        var hero2 = PRODUCTS.filter(function (p3) { return p3.category.toLowerCase() === c; })
+          .sort(function (a, b) { return b.popularity - a.popularity; })[0];
+        return '<a class="uc03-home-tile" href="#" data-uc03-nav="#/c/' + c + '">' +
+          (hero2 ? '<img src="' + esc(img(hero2.image_lifestyle)) + '" alt="">' : '') +
+          '<span>' + esc(label) + '</span></a>';
+      }).join('') + '</div>';
+      var newCards = '<div class="grid">' + byPop(6).map(function (p4) {
+        return '<article class="card">' +
+          '<a class="card__media" href="#" data-uc03-nav="#/product/' + esc(p4.sku) + '">' +
+            '<img class="card__img--lifestyle" src="' + esc(img(p4.image_lifestyle)) + '" alt="' + esc(name(p4)) + '" loading="lazy">' +
+          '</a>' +
+          '<div class="card__body">' +
+            '<a href="#" data-uc03-nav="#/product/' + esc(p4.sku) + '">' +
+              '<div class="card__brand">' + esc(p4.brand) + '</div>' +
+              '<div class="card__name">' + esc(name(p4)) + '</div>' +
+            '</a>' +
+            priceHTML(p4) +
+          '</div>' +
+        '</article>';
+      }).join('') + '</div>';
+      contentHTML = '<div class="uc03-shop-content">' +
+        '<p style="font-size:13px;color:#64748b;margin:0 0 14px">Browse the shop below — the Audiences panel updates as you go.</p>' +
+        tiles + '<h2 class="uc03-cat-title" style="margin-top:8px">' + esc(t('new_in')) + '</h2>' + newCards +
+      '</div>';
+    }
+
+    return '<div class="uc03-shop" data-uc03-shop>' +
+      uc01ShoplerHdr() +
+      contentHTML +
+    '</div>';
+  }
+
+  function uc03EnsureTimer() {
+    if (uc03Timer) return;
+    uc03Timer = setInterval(function () {
+      if (currentDemoId !== 'rt-segmentation') { clearInterval(uc03Timer); uc03Timer = null; return; }
+      // Tick: update time cells in place without full re-render
+      var rows = document.querySelectorAll('.uc03-aud-row[data-aud-id]');
+      var s = demoState.uc03;
+      if (!s) return;
+      rows.forEach(function (tr) {
+        var id = tr.getAttribute('data-aud-id');
+        var cell = tr.querySelector('.uc03-aud-time');
+        if (cell && s.enteredAt[id]) cell.textContent = uc03RelTime(s.enteredAt[id]);
+      });
+    }, 5000);
+  }
+
+  function uc03Navigate(href, s) {
+    var catMatch  = href.match(/^#\/c\/(.+)$/);
+    var prodMatch = href.match(/^#\/product\/(.+)$/);
+    var now = Date.now();
+    if (catMatch) {
+      var cat = catMatch[1];
+      s.route = {type: 'category', cat: cat};
+      var catName = cat === 'sale' ? 'Sale'
+        : cat.charAt(0).toUpperCase() + cat.slice(1);
+      s.viewCategories.push({cat: catName, ts: now});
+    } else if (prodMatch) {
+      var sku = prodMatch[1];
+      var p = BY_SKU[sku];
+      s.route = {type: 'product', sku: sku};
+      if (p) s.viewContents.push({sku: p.sku, brand: p.brand, category: p.category, ts: now});
+    }
+    uc03CheckAudiences(s);
+    // Clear newlyMet flags after this render
+    setTimeout(function () { if (demoState.uc03) demoState.uc03.newlyMet = {}; }, 2100);
+    rerenderDemo();
+  }
+
   /* ---------- per-use-case staging (presentation only) ---------- */
   var STAGE = {
     "email-capture": function (u) {
-      return demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta")) +
-        '<div class="wrap">' + demoRail(t("new_in"), byPop(4)) + '</div>' +
-        popupOverlay("Get 10% off your first order", ucExample(u),
-          null, '<form data-demo-signup class="demo-signup"><input type="email" placeholder="you@example.com" aria-label="Email" required><button class="btn" type="submit">Sign up</button></form>');
+      var done = !!demoState.uc01Done;
+      var submittedName = demoState.uc01Name || "";
+      var submittedEmail = demoState.uc01Email || "";
+      var animate = !!demoState.uc01Animate;
+      if (animate) demoState.uc01Animate = false;
+      var activeTab = demoState.ucActTab || "profile";
+      var prods = byPop(4);
+
+      var shoplerHdr = uc01ShoplerHdr();
+      var heroHTML = demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta"));
+      var railHTML = '<div class="wrap">' + demoRail(t("new_in") || "New in", prods) + '</div>';
+
+      var overlayCardHTML = done
+        ? '<div class="uc01-overlay__card">' +
+            '<div class="uc01-success">' +
+              '<div class="uc01-success__check">\u2713</div>' +
+              '<h3 class="uc01-success__title">You\u2019re on the list!</h3>' +
+              '<p class="uc01-success__body">Welcome, ' + esc(submittedName) + '. Your 10% discount is on its way.</p>' +
+              '<p class="uc01-success__note">\u2190 EmailOptIn event fired to Spotler Activate</p>' +
+            '</div>' +
+          '</div>'
+        : '<div class="uc01-overlay__card">' +
+            '<h3 class="uc01-overlay__title">Get 10% off your first order</h3>' +
+            '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
+            '<form class="uc01-signup" data-uc01-signup>' +
+              '<input class="uc01-signup__field" type="text" name="name" placeholder="First name" autocomplete="given-name" required>' +
+              '<input class="uc01-signup__field" type="email" name="email" placeholder="Email address" autocomplete="email" required>' +
+              '<label class="uc01-signup__consent"><input type="checkbox">\u00a0I agree to receive the Shopler newsletter</label>' +
+              '<button class="btn btn--block uc01-signup__btn" type="submit">Claim your discount</button>' +
+            '</form>' +
+          '</div>';
+
+      var overlayHTML = '<div class="uc01-overlay">' + overlayCardHTML + '</div>';
+
+      var leftHTML = ucactProfile({done: done, name: submittedName, email: submittedEmail, tab: activeTab, animate: animate}) +
+        demoCaption(u, true);
+
+      var shellCls = "ucsplit-shell" + (animate ? " uc01-pulse" : "");
+      return '<button class="uc01-replay" data-uc01-replay>\u21ba Replay</button>' +
+        '<div class="' + shellCls + '">' +
+          '<div class="ucsplit-left">' + leftHTML + '</div>' +
+          '<div class="ucsplit-gutter"></div>' +
+          '<div class="ucsplit-right">' +
+            '<div class="uc01-shopler">' +
+              shoplerHdr +
+              '<div class="uc01-shopler-body">' +
+                heroHTML + railHTML +
+              '</div>' +
+            '</div>' +
+            overlayHTML +
+          '</div>' +
+        '</div>';
     },
     "profile-enrichment": function (u) {
       var p = byPop(1)[0];
@@ -1423,11 +1928,40 @@
         ])) + '</div>';
     },
     "rt-segmentation": function (u) {
-      var seg = demoState.seg || 0;
-      var segs = ["New visitor", "Womenswear browser", "Sale-seeker", "High-intent (viewed 3+)"];
-      return demoBanner("◉", "Live segment", segs[seg % segs.length],
-        '<button class="btn btn--sm" data-demo-segment style="margin-left:auto">Simulate more browsing →</button>') +
-        '<div class="wrap">' + demoRail(t("picked"), byPop(4)) + '</div>';
+      if (!demoState.uc03) {
+        // Reset lang to English for a clean anonymous-visitor start
+        if (state.lang !== 'en') { state.lang = 'en'; persist(); }
+        demoState.uc03 = uc03InitState();
+      }
+      var s = demoState.uc03;
+      // Re-evaluate memberships (catches lang-toggle exit from country-nl)
+      uc03CheckAudiences(s);
+      uc03EnsureTimer();
+      // Schedule highlight clearance (covers lang-toggle and other non-navigate paths)
+      if (Object.keys(s.newlyMet).length > 0) {
+        setTimeout(function () { if (demoState.uc03) demoState.uc03.newlyMet = {}; }, 2500);
+      }
+
+      var activeTab = demoState.ucActTab || 'audiences';
+      var audContent = uc03AudiencesTabContent(s);
+
+      var leftHTML = ucactProfile({
+        done: false,
+        showSearch: false,
+        tab: activeTab,
+        extraTabs: [{id: 'audiences', label: 'Audiences', content: audContent}]
+      }) + demoCaption(u, true);
+
+      var rightHTML = uc03RightPane(s);
+
+      return '<div class="ucsplit-shell">' +
+          '<div class="ucsplit-left">' +
+            '<button class="uc03-replay-btn" data-uc03-replay>↺ Replay</button>' +
+            leftHTML +
+          '</div>' +
+          '<div class="ucsplit-gutter"></div>' +
+          '<div class="ucsplit-right">' + rightHTML + '</div>' +
+        '</div>';
     },
     "email-recognition": function (u) {
       return demoBanner("👋", "Welcome back, " + firstName(), ucExample(u)) +
@@ -1546,13 +2080,15 @@
     "predictive-clv": "Scored in Spotler Activate from purchase history; shown here as the VIP treatment a high-CLV contact receives."
   };
 
-  function demoCaption(u) {
+  function demoCaption(u, inPane) {
     var idx = UC_ORDER.indexOf(u.id);
     var prev = UC_ORDER[(idx - 1 + UC_ORDER.length) % UC_ORDER.length];
     var next = UC_ORDER[(idx + 1) % UC_ORDER.length];
     var signal = UC_NEEDS_SIGNAL[u.id];
-    return '<div class="demo-caption" data-demo-caption>' +
+    var cls = inPane ? "demo-caption demo-caption--inpane" : "demo-caption";
+    return '<div class="' + cls + '" data-demo-caption>' +
       '<button class="demo-caption__toggle" data-demo-caption-toggle aria-label="Toggle demo notes">i</button>' +
+      (inPane ? '<div class="demo-caption__guide-label">Use case guide</div>' : '') +
       '<div class="demo-caption__body">' +
         '<div class="demo-caption__eyebrow">Spotler Activate · use case ' + String(u.number).padStart(2, "0") + '</div>' +
         '<div class="demo-caption__name">' + esc(u.name) + '</div>' +
@@ -1562,9 +2098,9 @@
         '<div class="demo-caption__point"><span>Point at:</span> ' + esc(u.demo_screen) + '</div>' +
         (signal ? '<div class="demo-caption__note">' + esc(signal) + '</div>' : "") +
         '<div class="demo-caption__nav">' +
-          '<a href="#/usecase/' + prev + '">← prev</a>' +
+          '<a href="#/usecase/' + prev + '">' + '\u2190 prev</a>' +
           '<a href="#/usecases">all 18</a>' +
-          '<a href="#/usecase/' + next + '">next →</a>' +
+          '<a href="#/usecase/' + next + '">next \u2192</a>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1574,11 +2110,13 @@
     var u = UC_BY_ID[id];
     if (!u) {
       return '<div class="wrap"><div class="empty-state" style="padding:var(--space-16) 0">' +
-        'Unknown demo id: ' + esc(id) + '. <a href="#/usecases">See all 18 demos →</a></div></div>';
+        'Unknown demo id: ' + esc(id) + '. <a href="#/usecases">See all 18 demos \u2192</a></div></div>';
     }
     currentDemoId = id;
     var stage = STAGE[id] || function () { return '<div class="wrap"><p>' + esc(ucExample(u)) + '</p></div>'; };
-    return '<div class="demo-stage">' + stage(u) + demoCaption(u) + '</div>';
+    var stageHTML = stage(u);
+    var captionHTML = stageHTML.indexOf("demo-caption--inpane") >= 0 ? "" : demoCaption(u);
+    return '<div class="demo-stage">' + stageHTML + captionHTML + '</div>';
   }
 
   function renderUseCaseIndex() {
@@ -1599,22 +2137,81 @@
     '</div>';
   }
 
-  // Delegated interactions for the demo pages only (namespaced data-demo-*).
+  // UC03 click handler — intercepts nav, add-to-cart and replay inside the rt-segmentation demo.
   document.addEventListener("click", function (e) {
-    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment]");
+    if (currentDemoId !== 'rt-segmentation') return;
+
+    var replayEl = e.target.closest("[data-uc03-replay]");
+    if (replayEl) {
+      e.preventDefault();
+      demoState.uc03    = uc03InitState();
+      demoState.ucActTab = 'audiences';
+      // Reset lang and cart so replay returns to clean anonymous state
+      state.lang = 'en';
+      state.cart = []; persist(); renderChrome();
+      rerenderDemo(); return;
+    }
+
+    var navEl = e.target.closest("[data-uc03-nav]");
+    if (navEl) {
+      e.preventDefault();
+      e.stopPropagation(); // prevent hash change on <a href="#">
+      if (!demoState.uc03) demoState.uc03 = uc03InitState();
+      uc03Navigate(navEl.getAttribute("data-uc03-nav"), demoState.uc03);
+      return;
+    }
+
+    var atcEl = e.target.closest("[data-uc03-atc]");
+    if (atcEl && atcEl.closest("[data-uc03-shop]")) {
+      // The existing [data-add] handler fires cart logic; we add demo tracking on top.
+      var sku = atcEl.getAttribute("data-uc03-atc");
+      if (!demoState.uc03) demoState.uc03 = uc03InitState();
+      var s = demoState.uc03;
+      s.addToCarts.push({sku: sku, ts: Date.now()});
+      uc03CheckAudiences(s);
+      setTimeout(function () { if (demoState.uc03) demoState.uc03.newlyMet = {}; }, 2100);
+      // #drawer is a separate element; rerenderDemo() only replaces #app so the drawer stays intact
+      setTimeout(function () { if (currentDemoId === 'rt-segmentation') rerenderDemo(); }, 50);
+    }
+  });
+
+  // Delegated interactions for demo pages (data-demo-* and data-uc01-*).
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay]");
     if (!el) return;
     if (el.hasAttribute("data-demo-caption-toggle")) { e.preventDefault(); var c = document.querySelector("[data-demo-caption]"); if (c) c.classList.toggle("is-collapsed"); return; }
-    if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var p = el.closest("[data-demo-popup]"); if (p) p.remove(); return; }
+    if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var pp = el.closest("[data-demo-popup]"); if (pp) pp.remove(); return; }
     if (el.hasAttribute("data-demo-visitor")) { e.preventDefault(); demoState.visitor = el.getAttribute("data-demo-visitor"); rerenderDemo(); return; }
     if (el.hasAttribute("data-demo-segment")) { e.preventDefault(); demoState.seg = (demoState.seg || 0) + 1; rerenderDemo(); return; }
+    if (el.hasAttribute("data-uc01-tab")) { e.preventDefault(); demoState.ucActTab = el.getAttribute("data-uc01-tab"); rerenderDemo(); return; }
+    if (el.hasAttribute("data-uc01-replay")) {
+      e.preventDefault();
+      demoState.uc01Done = false; demoState.uc01Name = ""; demoState.uc01Email = "";
+      demoState.uc01Animate = false; demoState.ucActTab = undefined;
+      rerenderDemo(); return;
+    }
   });
   document.addEventListener("submit", function (e) {
     if (e.target.matches("[data-demo-signup]")) {
       e.preventDefault();
-      var em = e.target.querySelector('input[type="email"]');
-      if (em && em.value.trim() && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(em.value.trim(), true); } catch (x) {} }
+      var emEl = e.target.querySelector("input[type=\"email\"]");
+      if (emEl && emEl.value.trim() && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(emEl.value.trim(), true); } catch (x) {} }
       var card = e.target.closest(".demo-popup__card");
-      if (card) card.innerHTML = '<h3>You’re on the list ✓</h3><p>That’s the EmailOptIn event firing to Spotler Activate.</p>';
+      if (card) card.innerHTML = "<h3>You\u2019re on the list \u2713</h3><p>That\u2019s the EmailOptIn event firing to Spotler Activate.</p>";
+    }
+    if (e.target.matches("[data-uc01-signup]")) {
+      e.preventDefault();
+      var nameEl3 = e.target.querySelector("input[name=\"name\"]");
+      var emailEl3 = e.target.querySelector("input[name=\"email\"]");
+      var typedName3 = (nameEl3 && nameEl3.value.trim()) ? nameEl3.value.trim() : "Friend";
+      var typedEmail3 = (emailEl3 && emailEl3.value.trim()) ? emailEl3.value.trim() : "";
+      if (typedEmail3 && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(typedEmail3, true); } catch (x) {} }
+      demoState.uc01Done = true;
+      demoState.uc01Name = typedName3;
+      demoState.uc01Email = typedEmail3;
+      demoState.uc01Animate = true;
+      demoState.ucActTab = "profile";
+      rerenderDemo();
     }
   });
   function rerenderDemo() {
