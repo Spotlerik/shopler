@@ -1128,6 +1128,8 @@
     else html = viewHome();
     app.innerHTML = html;
     renderChrome();
+    document.getElementById("hdr").hidden = isDemo;
+    document.getElementById("ftr").hidden = isDemo;
     window.scrollTo(0, 0);
     // Re-apply remembered consent on every route BEFORE any event fires
     // (Activate does not persist consent itself).
@@ -1404,102 +1406,111 @@
       '</aside>';
   }
 
+
+  /* --- UC01 helper: Shopler header reproduced inside right panel --- */
+  function uc01ShoplerHdr() {
+    var hash = location.hash || "#/";
+    function active(h) { return hash.indexOf(h) === 0 ? " is-active" : ""; }
+    return '<div class="uc01-shopler-hdr">' +
+      '<div class="hdr__row">' +
+        '<a class="brand" href="#/" aria-label="Shopler home">' + monogramSVG() + '<span class="wm">Shopler</span></a>' +
+        '<nav class="nav">' +
+          '<a href="#/c/women" class="' + active("#/c/women") + '">' + esc(t("nav_women")) + '</a>' +
+          '<a href="#/c/men"' + (active("#/c/men") ? ' class="is-active"' : "") + '>' + esc(t("nav_men")) + '</a>' +
+          '<a href="#/c/accessories"' + (active("#/c/accessories") ? ' class="is-active"' : "") + '>' + esc(t("nav_accessories")) + '</a>' +
+          '<a href="#/c/sale" class="is-sale">' + esc(t("nav_sale")) + '</a>' +
+        '</nav>' +
+        '<div class="hdr__actions">' +
+          '<div class="lang">' +
+            '<button data-lang="en" class="' + (state.lang === "en" ? "is-active" : "") + '">EN</button>' +
+            '<button data-lang="nl" class="' + (state.lang === "nl" ? "is-active" : "") + '">NL</button>' +
+          '</div>' +
+          '<button class="icon-btn cart-btn" data-open-cart aria-label="' + esc(t("cart")) + '">' +
+            '<svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>' +
+            (cartCount() ? '<span class="count">' + cartCount() + "</span>" : "") +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   /* --- Shared: Spotler Activate 360° profile panel (ucact-*) --- */
   function ucactProfile(opts) {
-    var step = opts.step || 1;
-    var viewedSkus = opts.viewedSkus || [];
-    var flash = !!opts.flash;
-    var activeTab = opts.tab || (step === 1 || step >= 4 ? "profile" : "activity");
-    var knownName = opts.knownName || "";
-    var knownEmail = opts.knownEmail || "";
-    var lastProduct = opts.lastProduct || null;
-    var isKnown = step >= 4;
-    var hasBrowsed = step >= 2 && viewedSkus.length > 0;
-    var systemFields = [];
-    if (isKnown) {
-      var np = knownName.split(" ");
-      systemFields = [
-        { key: "First name", val: np[0] || DEMO_PERSONA.first, flash: flash },
-        { key: "Last name", val: np.slice(1).join(" ") || DEMO_PERSONA.last, flash: flash },
-        { key: "Email", val: knownEmail || DEMO_PERSONA.email, flash: flash },
-        { key: "Pages visited", val: String(viewedSkus.length + 2), flash: false },
-        { key: "EmailOptIn", val: "Yes", flash: flash }
-      ];
-    } else if (hasBrowsed) {
-      systemFields = [{ key: "Pages visited", val: String(viewedSkus.length + 1), flash: false }];
-      if (lastProduct) {
-        systemFields.push({ key: "Last category", val: lastProduct.category, flash: false });
-        systemFields.push({ key: "Last brand", val: lastProduct.brand, flash: false });
-      }
-    }
-    var sysHTML = systemFields.length
-      ? systemFields.map(function (f) {
-          return '<div class="ucact-field' + (f.flash ? " ucact-flash" : "") + '">' +
+    var done = !!opts.done;
+    var typedName = opts.name || "";
+    var typedEmail = opts.email || "";
+    var activeTab = opts.tab || "profile";
+    var animate = !!opts.animate;
+
+    var hdrBar = '<div class="ucact-hdrbar">' +
+      '<span class="ucact-hdrbar__wordmark">' +
+        '<span class="ucact-hdrbar__spotler">spotler</span>' +
+        '<span class="ucact-hdrbar__activate">activate</span>' +
+      '</span>' +
+    '</div>';
+
+    var avatarHTML = done
+      ? '<div class="ucact-avatar ucact-avatar--known">' + esc(typedName ? typedName[0].toUpperCase() : "?") + '</div>'
+      : '<div class="ucact-avatar ucact-avatar--anon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor" opacity=".45"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" fill="currentColor" opacity=".45"/></svg></div>';
+
+    var nameEl = done
+      ? '<p class="ucact-profile-name' + (animate ? " ucact-seq ucact-seq--name" : "") + '">' + esc(typedName) + '</p>'
+      : '<p class="ucact-profile-name">Unknown visitor</p>';
+    var emailEl = done
+      ? '<p class="ucact-profile-email' + (animate ? " ucact-seq ucact-seq--email" : "") + '">' + esc(typedEmail) + '</p>'
+      : '<p class="ucact-profile-email ucact-cookie-id">Session: a3f2c9d1</p>';
+    var chipEl = done
+      ? '<span class="ucact-tag ucact-tag--known' + (animate ? " ucact-seq ucact-seq--chip" : "") + '">Known</span>'
+      : '<span class="ucact-tag ucact-tag--anon">Anonymous</span>';
+
+    var contactRowsHTML = done
+      ? [
+          { key: "First name", val: typedName, delay: "0ms" },
+          { key: "Email", val: typedEmail, delay: "80ms" },
+          { key: "EmailOptIn", val: "Yes", delay: "160ms" }
+        ].map(function (f) {
+          return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
+            (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
             '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
             '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
         }).join("")
       : '<p class="ucact-empty">No fields found.</p>';
-    var actItems = [];
-    if (step >= 4) actItems.push({ label: "EmailOptIn", sub: knownEmail || DEMO_PERSONA.email, icon: "✉", flash: flash });
-    if (step >= 3) actItems.push({ label: "Viewed personalisation", sub: "Email capture pop-up", icon: "◎", flash: false });
-    viewedSkus.slice().reverse().forEach(function (sku) {
-      var pr = BY_SKU[sku];
-      if (pr) actItems.push({ label: "PageView", sub: name(pr), icon: "↗", flash: false });
-    });
-    actItems.push({ label: "PageView", sub: "Homepage", icon: "↗", flash: false });
-    var actHTML = '<div class="ucact-activity">' +
-      actItems.map(function (item, i) {
-        return '<div class="ucact-activity__item' + (item.flash ? " ucact-flash" : "") + '">' +
-          '<span class="ucact-activity__icon">' + esc(item.icon) + '</span>' +
-          '<div class="ucact-activity__body">' +
-            '<span class="ucact-activity__label">' + esc(item.label) + '</span>' +
-            '<span class="ucact-activity__sub">' + esc(item.sub) + '</span>' +
-          '</div>' +
-          '<span class="ucact-activity__time">' + (i === 0 ? "just now" : i + "m ago") + '</span>' +
-        '</div>';
-      }).join("") + '</div>';
+
     var profileContent =
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' + sysHTML + '</div>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div><p class="ucact-empty">No fields found.</p></div>' +
       '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>' +
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div><p class="ucact-empty">No fields found.</p></div>';
-    var tabContent = activeTab === "profile" ? profileContent : actHTML;
-    var initials = esc(DEMO_PERSONA.first[0]) + esc(DEMO_PERSONA.last[0]);
-    var avatarHTML = isKnown
-      ? '<div class="ucact-avatar ucact-avatar--known">' + initials + '</div>'
-      : '<div class="ucact-avatar ucact-avatar--anon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor" opacity=".45"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" fill="currentColor" opacity=".45"/></svg></div>';
-    var personaLabel = isKnown ? esc(DEMO_PERSONA.full) : "Unknown visitor";
-    var personaEmail = isKnown ? esc(DEMO_PERSONA.email) : "–";
-    var tagCls = isKnown ? "ucact-tag--known" : (step <= 1 ? "ucact-tag--anon" : "ucact-tag--new");
-    var tagLabel = isKnown ? "Known" : (step <= 1 ? "Anonymous" : "New visitor");
-    return '<div class="ucact-shell">' +
-      '<nav class="ucact-sidebar">' +
-        '<div class="ucact-sidebar__brand"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#4B6BFB"/><path d="M8 20l6-12 6 12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 16h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>' +
-        '<ul class="ucact-sidenav">' +
-          '<li class="ucact-sidenav__item is-active" title="Customers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/></svg></li>' +
-          '<li class="ucact-sidenav__item" title="Segments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></li>' +
-          '<li class="ucact-sidenav__item" title="Campaigns"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M2 9.5l10 6.5 10-6.5"/></svg></li>' +
-          '<li class="ucact-sidenav__item" title="Products"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6L18 2z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></li>' +
-        '</ul>' +
-      '</nav>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>';
+
+    var actHTML = done
+      ? '<div class="ucact-activity">' +
+          '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
+            '<span class="ucact-activity__icon">\u2709</span>' +
+            '<div class="ucact-activity__body">' +
+              '<span class="ucact-activity__label">EmailOptIn</span>' +
+              '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+            '</div>' +
+            '<span class="ucact-activity__time">just now</span>' +
+          '</div>' +
+        '</div>'
+      : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+
+    var tabContent = activeTab === "activity" ? actHTML : profileContent;
+
+    return hdrBar +
       '<div class="ucact-main">' +
         '<div class="ucact-topbar">' +
-          '<span class="ucact-topbar__title">Customer 360°</span>' +
-          '<div class="ucact-topbar__search"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search customers…</div>' +
+          '<span class="ucact-topbar__title">Customer 360\u00b0</span>' +
+          '<div class="ucact-topbar__search"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>\u00a0Search customers\u2026</div>' +
         '</div>' +
         '<div class="ucact-profile-hdr">' + avatarHTML +
-          '<div class="ucact-profile-meta">' +
-            '<p class="ucact-profile-name">' + personaLabel + '</p>' +
-            '<p class="ucact-profile-email">' + personaEmail + '</p>' +
-            '<span class="ucact-tag ' + tagCls + '">' + tagLabel + '</span>' +
-          '</div>' +
+          '<div class="ucact-profile-meta">' + nameEl + emailEl + chipEl + '</div>' +
         '</div>' +
         '<div class="ucact-tabs">' +
           '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" data-uc01-tab="profile">Profile</button>' +
           '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" data-uc01-tab="activity">Activity</button>' +
         '</div>' +
         '<div class="ucact-tab-content">' + tabContent + '</div>' +
-      '</div>' +
-    '</div>';
+      '</div>';
   }
 
   /* --- Shared: split-screen shell (ucsplit-*) --- */
@@ -1510,71 +1521,60 @@
   /* ---------- per-use-case staging (presentation only) ---------- */
   var STAGE = {
     "email-capture": function (u) {
-      var step = demoState.uc01Step || 1;
-      var viewedSkus = demoState.uc01ViewedSkus || [];
-      var flash = !!demoState.uc01Flash;
-      if (flash) demoState.uc01Flash = false;
-      var activeTab = demoState.ucActTab || (step === 1 || step >= 4 ? "profile" : "activity");
-      var lastSku = viewedSkus.length ? viewedSkus[viewedSkus.length - 1] : null;
-      var lastProduct = lastSku ? BY_SKU[lastSku] : null;
+      var done = !!demoState.uc01Done;
+      var submittedName = demoState.uc01Name || "";
+      var submittedEmail = demoState.uc01Email || "";
+      var animate = !!demoState.uc01Animate;
+      if (animate) demoState.uc01Animate = false;
+      var activeTab = demoState.ucActTab || "profile";
       var prods = byPop(4);
-      var miniHdr = '<header class="uc01-mini-hdr">' +
-        '<span class="uc01-mini-logo">Shopler</span>' +
-        '<nav class="uc01-mini-nav"><span>Women</span><span>Men</span><span>Sale</span></nav>' +
-        '<span class="uc01-mini-cart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6L18 2z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>' +
-        '</header>';
-      var gridHTML = '<div class="uc01-grid">' +
-        prods.map(function (p) {
-          var viewed = viewedSkus.indexOf(p.sku) >= 0;
-          var clickAttr = step === 2 ? ' data-uc01-product-click="' + esc(p.sku) + '"' : '';
-          return '<article class="uc01-card' + (viewed ? ' uc01-card--viewed' : '') + '"' + clickAttr + '>' +
-            '<div class="uc01-card__media"><img src="' + img(p.image) + '" alt="' + esc(name(p)) + '" loading="lazy">' +
-            (viewed ? '<span class="uc01-viewed-badge">✓</span>' : '') +
-            '</div><div class="uc01-card__body"><p class="uc01-card__name">' + esc(name(p)) + '</p>' +
-            '<p class="uc01-card__price">' + money(effectivePrice(p)) + '</p></div></article>';
-        }).join('') + '</div>';
-      var cookieBar = step === 1
-        ? '<div class="uc01-cookie-bar"><p class="uc01-cookie-bar__text">We use cookies to personalise your shopping experience.</p>' +
-          '<div class="uc01-cookie-bar__btns"><button class="btn btn--sm" data-uc01-cookie-accept>Accept all</button>' +
-          '<button class="btn btn--sm btn--ghost">Decline</button></div></div>'
-        : '';
-      var overlay = step === 3
-        ? '<div class="uc01-overlay"><div class="uc01-overlay__card">' +
-          '<h3 class="uc01-overlay__title">Get 10% off your first order</h3>' +
-          '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
-          '<form class="uc01-signup" data-uc01-signup>' +
-            '<input class="uc01-signup__field" type="text" name="name" placeholder="Your name" autocomplete="name">' +
-            '<input class="uc01-signup__field" type="email" name="email" placeholder="you@example.com" autocomplete="email">' +
-            '<button class="btn btn--block uc01-signup__btn" type="submit">Claim your discount</button>' +
-          '</form></div></div>'
-        : '';
-      var successHTML = step >= 4
-        ? '<div class="uc01-success">' +
-          '<div class="uc01-success__check">✓</div>' +
-          '<h3 class="uc01-success__title">You’re on the list!</h3>' +
-          '<p class="uc01-success__body">Welcome, ' + esc(DEMO_PERSONA.first) + '. Your 10% discount is on its way.</p>' +
-          '<p class="uc01-success__note">↑ EmailOptIn event fired to Spotler Activate</p>' +
+
+      var shoplerHdr = uc01ShoplerHdr();
+      var heroHTML = demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta"));
+      var railHTML = '<div class="wrap">' + demoRail(t("new_in") || "New in", prods) + '</div>';
+
+      var overlayHTML = !done
+        ? '<div class="uc01-overlay">' +
+            '<div class="uc01-overlay__card">' +
+              '<h3 class="uc01-overlay__title">Get 10% off your first order</h3>' +
+              '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
+              '<form class="uc01-signup" data-uc01-signup>' +
+                '<input class="uc01-signup__field" type="text" name="name" placeholder="First name" autocomplete="given-name" required>' +
+                '<input class="uc01-signup__field" type="email" name="email" placeholder="Email address" autocomplete="email" required>' +
+                '<label class="uc01-signup__consent"><input type="checkbox">\u00a0I agree to receive the Shopler newsletter</label>' +
+                '<button class="btn btn--block uc01-signup__btn" type="submit">Claim your discount</button>' +
+              '</form>' +
+            '</div>' +
           '</div>'
         : '';
-      var shoplerContent = step >= 4 ? miniHdr + successHTML : miniHdr + gridHTML + overlay;
-      var shoplerHTML = '<div class="uc01-shopler">' + shoplerContent + cookieBar + '</div>';
-      var panelHTML = ucactProfile({
-        step: step, viewedSkus: viewedSkus, flash: flash, tab: activeTab,
-        knownName: step >= 4 ? DEMO_PERSONA.full : '',
-        knownEmail: step >= 4 ? DEMO_PERSONA.email : '',
-        lastProduct: lastProduct
+
+      var confirmHTML = done
+        ? '<div class="uc01-success">' +
+            '<div class="uc01-success__check">\u2713</div>' +
+            '<h3 class="uc01-success__title">You\u2019re on the list!</h3>' +
+            '<p class="uc01-success__body">Welcome, ' + esc(submittedName) + '. Your 10% discount is on its way.</p>' +
+            '<p class="uc01-success__note">\u2191 EmailOptIn event fired to Spotler Activate</p>' +
+          '</div>'
+        : '';
+
+      var leftHTML = ucactProfile({
+        done: done, name: submittedName, email: submittedEmail,
+        tab: activeTab, animate: animate
       });
-      var stepNames = ['Anonymous', 'Browsing', 'Invitation', 'Known'];
-      var stepsHTML = '<div class="uc01-steps">' +
-        stepNames.map(function (label, i) {
-          var n = i + 1;
-          var cls = step === n ? ' is-active' : (step > n ? ' is-done' : '');
-          return (i > 0 ? '<span class="uc01-step__sep">›</span>' : '') +
-            '<span class="uc01-step' + cls + '">' + n + ' ' + esc(label) + '</span>';
-        }).join('') +
-        '<button class="uc01-replay" data-uc01-replay>↺ Replay</button>' +
+
+      var shellCls = "ucsplit-shell" + (animate ? " uc01-pulse" : "");
+      return '<button class="uc01-replay" data-uc01-replay>\u21ba Replay</button>' +
+        '<div class="' + shellCls + '">' +
+          '<div class="ucsplit-left">' + leftHTML + '</div>' +
+          '<div class="ucsplit-right">' +
+            '<div class="uc01-shopler">' +
+              shoplerHdr +
+              '<div class="uc01-shopler-body">' +
+                (done ? confirmHTML : heroHTML + railHTML + overlayHTML) +
+              '</div>' +
+            '</div>' +
+          '</div>' +
         '</div>';
-      return stepsHTML + ucsplitShell(panelHTML, shoplerHTML);
     },
     "profile-enrichment": function (u) {
       var p = byPop(1)[0];
@@ -1766,43 +1766,40 @@
 
   // Delegated interactions for demo pages (data-demo-* and data-uc01-*).
   document.addEventListener("click", function (e) {
-    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-cookie-accept],[data-uc01-product-click],[data-uc01-tab],[data-uc01-replay]");
+    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay]");
     if (!el) return;
     if (el.hasAttribute("data-demo-caption-toggle")) { e.preventDefault(); var c = document.querySelector("[data-demo-caption]"); if (c) c.classList.toggle("is-collapsed"); return; }
     if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var pp = el.closest("[data-demo-popup]"); if (pp) pp.remove(); return; }
     if (el.hasAttribute("data-demo-visitor")) { e.preventDefault(); demoState.visitor = el.getAttribute("data-demo-visitor"); rerenderDemo(); return; }
     if (el.hasAttribute("data-demo-segment")) { e.preventDefault(); demoState.seg = (demoState.seg || 0) + 1; rerenderDemo(); return; }
-    if (el.hasAttribute("data-uc01-cookie-accept")) { e.preventDefault(); demoState.uc01Step = 2; demoState.ucActTab = undefined; rerenderDemo(); return; }
-    if (el.hasAttribute("data-uc01-product-click")) {
-      e.preventDefault();
-      var sku = el.getAttribute("data-uc01-product-click");
-      var skus = demoState.uc01ViewedSkus || [];
-      if (skus.indexOf(sku) < 0) skus.push(sku);
-      demoState.uc01ViewedSkus = skus;
-      demoState.uc01Step = 3;
-      demoState.ucActTab = undefined;
-      rerenderDemo();
-      return;
-    }
     if (el.hasAttribute("data-uc01-tab")) { e.preventDefault(); demoState.ucActTab = el.getAttribute("data-uc01-tab"); rerenderDemo(); return; }
-    if (el.hasAttribute("data-uc01-replay")) { e.preventDefault(); demoState.uc01Step = 1; demoState.uc01ViewedSkus = []; demoState.uc01Flash = false; demoState.ucActTab = undefined; rerenderDemo(); return; }
+    if (el.hasAttribute("data-uc01-replay")) {
+      e.preventDefault();
+      demoState.uc01Done = false; demoState.uc01Name = ""; demoState.uc01Email = "";
+      demoState.uc01Animate = false; demoState.ucActTab = undefined;
+      rerenderDemo(); return;
+    }
   });
   document.addEventListener("submit", function (e) {
     if (e.target.matches("[data-demo-signup]")) {
       e.preventDefault();
-      var em = e.target.querySelector('input[type="email"]');
-      if (em && em.value.trim() && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(em.value.trim(), true); } catch (x) {} }
+      var emEl = e.target.querySelector("input[type=\"email\"]");
+      if (emEl && emEl.value.trim() && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(emEl.value.trim(), true); } catch (x) {} }
       var card = e.target.closest(".demo-popup__card");
-      if (card) card.innerHTML = '<h3>You’re on the list ✓</h3><p>That’s the EmailOptIn event firing to Spotler Activate.</p>';
+      if (card) card.innerHTML = "<h3>You\u2019re on the list \u2713</h3><p>That\u2019s the EmailOptIn event firing to Spotler Activate.</p>";
     }
     if (e.target.matches("[data-uc01-signup]")) {
       e.preventDefault();
-      var emailEl = e.target.querySelector('input[name="email"]');
-      var submitEmail = (emailEl && emailEl.value.trim()) ? emailEl.value.trim() : DEMO_PERSONA.email;
-      if (typeof trackEmailOptIn === "function") { try { trackEmailOptIn(submitEmail, true); } catch (x) {} }
-      demoState.uc01Step = 4;
-      demoState.uc01Flash = true;
-      demoState.ucActTab = undefined;
+      var nameEl3 = e.target.querySelector("input[name=\"name\"]");
+      var emailEl3 = e.target.querySelector("input[name=\"email\"]");
+      var typedName3 = (nameEl3 && nameEl3.value.trim()) ? nameEl3.value.trim() : "Friend";
+      var typedEmail3 = (emailEl3 && emailEl3.value.trim()) ? emailEl3.value.trim() : "";
+      if (typedEmail3 && typeof trackEmailOptIn === "function") { try { trackEmailOptIn(typedEmail3, true); } catch (x) {} }
+      demoState.uc01Done = true;
+      demoState.uc01Name = typedName3;
+      demoState.uc01Email = typedEmail3;
+      demoState.uc01Animate = true;
+      demoState.ucActTab = "profile";
       rerenderDemo();
     }
   });
