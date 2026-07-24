@@ -1533,46 +1533,44 @@
       var heroHTML = demoHero(t("hero_eyebrow"), t("hero_title"), t("hero_sub"), t("hero_cta"));
       var railHTML = '<div class="wrap">' + demoRail(t("new_in") || "New in", prods) + '</div>';
 
-      var overlayHTML = !done
-        ? '<div class="uc01-overlay">' +
-            '<div class="uc01-overlay__card">' +
-              '<h3 class="uc01-overlay__title">Get 10% off your first order</h3>' +
-              '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
-              '<form class="uc01-signup" data-uc01-signup>' +
-                '<input class="uc01-signup__field" type="text" name="name" placeholder="First name" autocomplete="given-name" required>' +
-                '<input class="uc01-signup__field" type="email" name="email" placeholder="Email address" autocomplete="email" required>' +
-                '<label class="uc01-signup__consent"><input type="checkbox">\u00a0I agree to receive the Shopler newsletter</label>' +
-                '<button class="btn btn--block uc01-signup__btn" type="submit">Claim your discount</button>' +
-              '</form>' +
+      var overlayCardHTML = done
+        ? '<div class="uc01-overlay__card">' +
+            '<div class="uc01-success">' +
+              '<div class="uc01-success__check">\u2713</div>' +
+              '<h3 class="uc01-success__title">You\u2019re on the list!</h3>' +
+              '<p class="uc01-success__body">Welcome, ' + esc(submittedName) + '. Your 10% discount is on its way.</p>' +
+              '<p class="uc01-success__note">\u2190 EmailOptIn event fired to Spotler Activate</p>' +
             '</div>' +
           '</div>'
-        : '';
+        : '<div class="uc01-overlay__card">' +
+            '<h3 class="uc01-overlay__title">Get 10% off your first order</h3>' +
+            '<p class="uc01-overlay__body">' + esc(ucExample(u)) + '</p>' +
+            '<form class="uc01-signup" data-uc01-signup>' +
+              '<input class="uc01-signup__field" type="text" name="name" placeholder="First name" autocomplete="given-name" required>' +
+              '<input class="uc01-signup__field" type="email" name="email" placeholder="Email address" autocomplete="email" required>' +
+              '<label class="uc01-signup__consent"><input type="checkbox">\u00a0I agree to receive the Shopler newsletter</label>' +
+              '<button class="btn btn--block uc01-signup__btn" type="submit">Claim your discount</button>' +
+            '</form>' +
+          '</div>';
 
-      var confirmHTML = done
-        ? '<div class="uc01-success">' +
-            '<div class="uc01-success__check">\u2713</div>' +
-            '<h3 class="uc01-success__title">You\u2019re on the list!</h3>' +
-            '<p class="uc01-success__body">Welcome, ' + esc(submittedName) + '. Your 10% discount is on its way.</p>' +
-            '<p class="uc01-success__note">\u2191 EmailOptIn event fired to Spotler Activate</p>' +
-          '</div>'
-        : '';
+      var overlayHTML = '<div class="uc01-overlay">' + overlayCardHTML + '</div>';
 
-      var leftHTML = ucactProfile({
-        done: done, name: submittedName, email: submittedEmail,
-        tab: activeTab, animate: animate
-      });
+      var leftHTML = ucactProfile({done: done, name: submittedName, email: submittedEmail, tab: activeTab, animate: animate}) +
+        demoCaption(u, true);
 
       var shellCls = "ucsplit-shell" + (animate ? " uc01-pulse" : "");
       return '<button class="uc01-replay" data-uc01-replay>\u21ba Replay</button>' +
         '<div class="' + shellCls + '">' +
           '<div class="ucsplit-left">' + leftHTML + '</div>' +
+          '<div class="ucsplit-gutter"></div>' +
           '<div class="ucsplit-right">' +
             '<div class="uc01-shopler">' +
               shoplerHdr +
               '<div class="uc01-shopler-body">' +
-                (done ? confirmHTML : heroHTML + railHTML + overlayHTML) +
+                heroHTML + railHTML +
               '</div>' +
             '</div>' +
+            overlayHTML +
           '</div>' +
         '</div>';
     },
@@ -1711,13 +1709,15 @@
     "predictive-clv": "Scored in Spotler Activate from purchase history; shown here as the VIP treatment a high-CLV contact receives."
   };
 
-  function demoCaption(u) {
+  function demoCaption(u, inPane) {
     var idx = UC_ORDER.indexOf(u.id);
     var prev = UC_ORDER[(idx - 1 + UC_ORDER.length) % UC_ORDER.length];
     var next = UC_ORDER[(idx + 1) % UC_ORDER.length];
     var signal = UC_NEEDS_SIGNAL[u.id];
-    return '<div class="demo-caption" data-demo-caption>' +
+    var cls = inPane ? "demo-caption demo-caption--inpane" : "demo-caption";
+    return '<div class="' + cls + '" data-demo-caption>' +
       '<button class="demo-caption__toggle" data-demo-caption-toggle aria-label="Toggle demo notes">i</button>' +
+      (inPane ? '<div class="demo-caption__guide-label">Use case guide</div>' : '') +
       '<div class="demo-caption__body">' +
         '<div class="demo-caption__eyebrow">Spotler Activate · use case ' + String(u.number).padStart(2, "0") + '</div>' +
         '<div class="demo-caption__name">' + esc(u.name) + '</div>' +
@@ -1727,9 +1727,9 @@
         '<div class="demo-caption__point"><span>Point at:</span> ' + esc(u.demo_screen) + '</div>' +
         (signal ? '<div class="demo-caption__note">' + esc(signal) + '</div>' : "") +
         '<div class="demo-caption__nav">' +
-          '<a href="#/usecase/' + prev + '">← prev</a>' +
+          '<a href="#/usecase/' + prev + '">' + '\u2190 prev</a>' +
           '<a href="#/usecases">all 18</a>' +
-          '<a href="#/usecase/' + next + '">next →</a>' +
+          '<a href="#/usecase/' + next + '">next \u2192</a>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1739,11 +1739,13 @@
     var u = UC_BY_ID[id];
     if (!u) {
       return '<div class="wrap"><div class="empty-state" style="padding:var(--space-16) 0">' +
-        'Unknown demo id: ' + esc(id) + '. <a href="#/usecases">See all 18 demos →</a></div></div>';
+        'Unknown demo id: ' + esc(id) + '. <a href="#/usecases">See all 18 demos \u2192</a></div></div>';
     }
     currentDemoId = id;
     var stage = STAGE[id] || function () { return '<div class="wrap"><p>' + esc(ucExample(u)) + '</p></div>'; };
-    return '<div class="demo-stage">' + stage(u) + demoCaption(u) + '</div>';
+    var stageHTML = stage(u);
+    var captionHTML = stageHTML.indexOf("demo-caption--inpane") >= 0 ? "" : demoCaption(u);
+    return '<div class="demo-stage">' + stageHTML + captionHTML + '</div>';
   }
 
   function renderUseCaseIndex() {
