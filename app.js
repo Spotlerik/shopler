@@ -16,7 +16,7 @@
   // (products.default.json) used by the admin's "Reset to factory settings".
   var FIELDS = ["sku", "image", "image_lifestyle", "name_en", "name_nl", "brand",
     "category", "subcategory", "gender", "price_eur", "sale_price_eur", "stock",
-    "color", "material", "season", "popularity", "pairs_with"];
+    "color", "material", "season", "popularity", "pairs_with", "sizes"];
   function cloneList(a) { return JSON.parse(JSON.stringify(a || [])); }
   var PRODUCTS, BY_SKU = {};
   function rebuildIndex() { BY_SKU = {}; PRODUCTS.forEach(function (p) { BY_SKU[p.sku] = p; }); }
@@ -160,12 +160,25 @@
   // Size options are derived from product TYPE (subcategory), never hardcoded per SKU,
   // so all 40 products map automatically. Stock stays at product level — sizes are
   // UI choice-options only. Empty array === one-size (no picker).
-  var SIZE_APPAREL = ["Knitwear", "Tops", "Dresses", "Outerwear", "Skirts", "Trousers", "Jeans", "Loungewear"];
+  var SIZE_APPAREL_W = ["Knitwear", "Tops", "Dresses", "Outerwear", "Skirts", "Trousers", "Jeans", "Loungewear"];
+  var SIZE_APPAREL_M_LETTER = ["Knitwear", "Outerwear", "Tops"];
+  var SIZE_APPAREL_M_NUM   = ["Jeans", "Trousers"];
   function sizesFor(p) {
-    if (SIZE_APPAREL.indexOf(p.subcategory) >= 0) return ["S", "M", "L", "XL"];
-    if (p.subcategory === "Shoes") return ["37", "38", "39", "40", "41"];
-    if (p.subcategory === "Belts") return ["85", "90", "95", "100"];
-    return []; // Bags, Hats, Scarves, Eyewear, Small leather -> one size
+    // Use product-level sizes when present; skip if it's a single "One size" entry
+    // (those are accessories that the PDP renders as a text label, not a picker).
+    if (Array.isArray(p.sizes) && p.sizes.length > 0 && !(p.sizes.length === 1 && p.sizes[0] === "One size")) {
+      return p.sizes;
+    }
+    // Derive from category + subcategory (runtime guard for stale localStorage catalogues).
+    if (p.category === "Women") {
+      if (SIZE_APPAREL_W.indexOf(p.subcategory) >= 0) return ["34","36","38","40","42","44"];
+      if (p.subcategory === "Shoes") return ["36","37","38","39","40","41"];
+    }
+    if (p.category === "Men") {
+      if (SIZE_APPAREL_M_NUM.indexOf(p.subcategory) >= 0)    return ["28","30","32","34","36"];
+      if (SIZE_APPAREL_M_LETTER.indexOf(p.subcategory) >= 0) return ["S","M","L","XL"];
+    }
+    return []; // Accessories or unmatched → "one size" text label on PDP
   }
 
   /* ============================================================================
@@ -498,20 +511,13 @@
     f.colours.forEach(function (c) { chips.push(chip("colour", c, c)); });
     if (f.price) chips.push(chip("price", f.price, priceLabel(f.price)));
 
-    function fopts(group, values, sel) {
-      return values.map(function (v) {
-        var checked = sel.indexOf(v) >= 0 ? " checked" : "";
-        return '<label><input type="checkbox" data-filter="' + group + '" value="' + esc(v) + '"' + checked + '>' + esc(v) + "</label>";
-      }).join("");
-    }
-
     return '<div class="wrap">' +
       '<nav class="breadcrumb"><a href="#/">Shopler</a> / ' + esc(title) + '</nav>' +
       '<h1 class="page-title">' + esc(title) + '</h1>' +
       '<div class="listing">' +
         '<aside class="filters">' +
-          '<h3>' + esc(t("f_brand")) + '</h3><div class="fgroup">' + fopts("brand", brands, f.brands) + '</div>' +
-          '<h3>' + esc(t("f_colour")) + '</h3><div class="fgroup">' + fopts("colour", colours, f.colours) + '</div>' +
+          listingFacetGroup(t("f_brand"), brands, "brand", f.brands, "data-filter") +
+          listingFacetGroup(t("f_colour"), colours, "colour", f.colours, "data-filter") +
           '<h3>' + esc(t("f_price")) + '</h3><div class="fgroup">' +
             priceRadio("", t("view_all"), f.price) +
             priceRadio("u50", "< " + money(50), f.price) +
@@ -1262,6 +1268,28 @@
       render();
     } else if (el.matches("[data-price]")) { listingFilters.price = el.value; render(); }
     else if (el.matches("[data-sort]")) { listingFilters.sort = el.value; render(); }
+    else if (el.matches("[data-uc02-filter]")) {
+      if (!demoState.uc02) return;
+      var ug = el.getAttribute("data-uc02-filter"), uv = el.value;
+      var ua = ug === "brand" ? demoState.uc02.brands : ug === "colour" ? demoState.uc02.colours : ug === "subcat" ? demoState.uc02.subcats : demoState.uc02.sizes;
+      if (el.checked) { if (ua.indexOf(uv) < 0) ua.push(uv); }
+      else { var uii = ua.indexOf(uv); if (uii >= 0) ua.splice(uii, 1); }
+      demoState.uc02.eventCount = (demoState.uc02.eventCount || 0) + 1;
+      rerenderDemo();
+    } else if (el.matches("[data-uc02-gender]")) {
+      if (!demoState.uc02) return;
+      demoState.uc02.gender = el.value;
+      demoState.uc02.eventCount = (demoState.uc02.eventCount || 0) + 1;
+      rerenderDemo();
+    } else if (el.matches("[data-uc02-price]")) {
+      if (!demoState.uc02) return;
+      demoState.uc02.price = el.value;
+      rerenderDemo();
+    } else if (el.matches("[data-uc02-sort]")) {
+      if (!demoState.uc02) return;
+      demoState.uc02.sort = el.value;
+      rerenderDemo();
+    }
   });
   document.addEventListener("submit", function (e) {
     if (e.target.matches("[data-checkout]")) {
@@ -1434,7 +1462,14 @@
     '</div>';
   }
 
-  /* --- Shared: Spotler Activate 360° profile panel (ucact-*) --- */
+  /* --- Shared: Spotler Activate 360° profile panel (ucact-*) ---
+   * Extra opts for non-UC01 variants (all optional; UC01 ignores them):
+   *   tabAttr      — attribute on tab buttons (default "data-uc01-tab")
+   *   systemFields — {fields:[{key,val,date}], prevKeys:[]} → live system fields with dates
+   *   contactRows  — [{key,val,dim}] → replaces default name/email/optIn rows
+   *   eventCount   — number → event counter in Activity tab instead of EmailOptIn item
+   *   previewNote  — string → italic hint at bottom of panel
+   */
   function ucactProfile(opts) {
     var done = !!opts.done;
     var typedName = opts.name || "";
@@ -1443,6 +1478,7 @@
     var animate = !!opts.animate;
     var extraTabs = opts.extraTabs || [];   // [{id, label, content}] — UC03 et al.
     var showSearch = opts.showSearch !== false;
+    var tabAttr = opts.tabAttr || "data-uc01-tab";
 
     var hdrBar = '<div class="ucact-hdrbar">' +
       '<span class="ucact-hdrbar__wordmark">' +
@@ -1465,36 +1501,85 @@
       ? '<span class="ucact-tag ucact-tag--known' + (animate ? " ucact-seq ucact-seq--chip" : "") + '">Known</span>'
       : '<span class="ucact-tag ucact-tag--anon">Anonymous</span>';
 
-    var contactRowsHTML = done
-      ? [
-          { key: "First name", val: typedName, delay: "0ms" },
-          { key: "Email", val: typedEmail, delay: "80ms" },
-          { key: "EmailOptIn", val: "Yes", delay: "160ms" }
-        ].map(function (f) {
-          return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
-            (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
-            '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
-            '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
-        }).join("")
-      : '<p class="ucact-empty">No fields found.</p>';
+    // System section — live fields with date column when systemFields opt provided.
+    var sysContent;
+    if (opts.systemFields) {
+      var sf = opts.systemFields, pk = sf.prevKeys || [];
+      sysContent = sf.fields.length === 0
+        ? '<p class="ucact-empty">No fields found.</p>'
+        : '<div class="uc02-system-section">' +
+            '<div class="uc02-col-date-hdr"><span>Field</span><span>Date</span></div>' +
+            sf.fields.map(function(fi) {
+              var isNew = pk.indexOf(fi.key) < 0;
+              return '<div class="uc02-sysfield' + (isNew ? ' uc02-sysfield--new' : '') + '">' +
+                '<div class="uc02-sysfield__left">' +
+                  '<span class="uc02-sysfield__key">' + esc(fi.key) + '</span>' +
+                  '<span class="uc02-sysfield__val">' + esc(fi.val) + '</span>' +
+                '</div>' +
+                '<span class="uc02-sysfield__date">' + esc(fi.date) + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+    } else {
+      sysContent = '<p class="ucact-empty">No fields found.</p>';
+    }
+
+    // Contact section — caller-supplied rows or default name/email/optIn rows.
+    var contactRowsHTML;
+    if (opts.contactRows) {
+      contactRowsHTML = opts.contactRows.map(function(r) {
+        return '<div class="ucact-field">' +
+          '<span class="ucact-field__key">' + esc(r.key) + '</span>' +
+          '<span class="ucact-field__val' + (r.dim ? ' uc02-unknown' : '') + '">' + esc(r.val || '') + '</span>' +
+        '</div>';
+      }).join('') || '<p class="ucact-empty">No fields found.</p>';
+    } else {
+      contactRowsHTML = done
+        ? [
+            { key: "First name", val: typedName, delay: "0ms" },
+            { key: "Email", val: typedEmail, delay: "80ms" },
+            { key: "EmailOptIn", val: "Yes", delay: "160ms" }
+          ].map(function (f) {
+            return '<div class="ucact-field' + (animate ? " ucact-seq ucact-seq--contact" : "") + '"' +
+              (animate ? ' style="--ucact-cd:' + f.delay + '"' : "") + '>' +
+              '<span class="ucact-field__key">' + esc(f.key) + '</span>' +
+              '<span class="ucact-field__val">' + esc(f.val) + '</span></div>';
+          }).join("")
+        : '<p class="ucact-empty">No fields found.</p>';
+    }
 
     var profileContent =
-      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div><p class="ucact-empty">No fields found.</p></div>' +
+      '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">System</span></div>' + sysContent + '</div>' +
       '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Custom</span></div><p class="ucact-empty">No fields found.</p></div>' +
       '<div class="ucact-section"><div class="ucact-section__hdr"><span class="ucact-section__title">Contact</span></div>' + contactRowsHTML + '</div>';
 
-    var actHTML = done
-      ? '<div class="ucact-activity">' +
-          '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
-            '<span class="ucact-activity__icon">\u2709</span>' +
-            '<div class="ucact-activity__body">' +
-              '<span class="ucact-activity__label">EmailOptIn</span>' +
-              '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+    // Activity tab \u2014 event counter (UC02) or EmailOptIn item (UC01 default).
+    var actHTML;
+    if (opts.eventCount != null) {
+      var ec = opts.eventCount;
+      actHTML = '<div class="ucact-activity">' +
+        (ec > 0
+          ? '<div class="ucact-activity__item"><span class="ucact-activity__icon">\u26a1</span>' +
+              '<div class="ucact-activity__body">' +
+                '<span class="ucact-activity__label">Filter interactions</span>' +
+                '<span class="ucact-activity__sub">' + ec + ' event' + (ec !== 1 ? 's' : '') + '</span>' +
+              '</div></div>'
+          : '<p class="ucact-empty" style="padding:12px 0">No activity yet.</p>') +
+      '</div>';
+    } else {
+      actHTML = done
+        ? '<div class="ucact-activity">' +
+            '<div class="ucact-activity__item' + (animate ? " ucact-seq ucact-seq--activity" : "") + '">' +
+              '<span class="ucact-activity__icon">\u2709</span>' +
+              '<div class="ucact-activity__body">' +
+                '<span class="ucact-activity__label">EmailOptIn</span>' +
+                '<span class="ucact-activity__sub">' + esc(typedEmail) + '</span>' +
+              '</div>' +
+              '<span class="ucact-activity__time">just now</span>' +
             '</div>' +
-            '<span class="ucact-activity__time">just now</span>' +
-          '</div>' +
-        '</div>'
-      : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+          '</div>'
+        : '<div class="ucact-activity"><p class="ucact-empty" style="padding:12px 0">No activity yet.</p></div>';
+    }
 
     var extraTabMatch = extraTabs.filter(function (et) { return et.id === activeTab; })[0];
     var tabContent = extraTabMatch ? extraTabMatch.content : (activeTab === "activity" ? actHTML : profileContent);
@@ -1509,11 +1594,12 @@
           '<div class="ucact-profile-meta">' + nameEl + emailEl + chipEl + '</div>' +
         '</div>' +
         '<div class="ucact-tabs">' +
-          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" data-uc01-tab="profile">Profile</button>' +
-          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" data-uc01-tab="activity">Activity</button>' +
-          extraTabs.map(function (et) { return '<button class="ucact-tab' + (activeTab === et.id ? " is-active" : "") + '" data-uc01-tab="' + esc(et.id) + '">' + esc(et.label) + '</button>'; }).join('') +
+          '<button class="ucact-tab' + (activeTab === "profile" ? " is-active" : "") + '" ' + tabAttr + '="profile">Profile</button>' +
+          '<button class="ucact-tab' + (activeTab === "activity" ? " is-active" : "") + '" ' + tabAttr + '="activity">Activity</button>' +
+          extraTabs.map(function (et) { return '<button class="ucact-tab' + (activeTab === et.id ? " is-active" : "") + '" ' + tabAttr + '="' + esc(et.id) + '">' + esc(et.label) + '</button>'; }).join('') +
         '</div>' +
         '<div class="ucact-tab-content">' + tabContent + '</div>' +
+        (opts.previewNote ? '<p class="uc02-preview-note">' + esc(opts.previewNote) + '</p>' : '') +
       '</div>';
   }
 
@@ -1860,6 +1946,144 @@
     rerenderDemo();
   }
 
+  /* --- UC02: Profile Enrichment helpers --- */
+  function uc02DeriveFields(st, today) {
+    var fields = [];
+    st.brands.forEach(function(b, i) {
+      if (i < 3) fields.push({ key: "favorite_brand_" + (i + 1), val: b, date: today });
+    });
+    if (st.colours.length) fields.push({ key: "favorite_color_1", val: st.colours[0], date: today });
+    if (st.sizes.length) fields.push({ key: "favorite_size_1", val: st.sizes[0], date: today });
+    if (st.subcats.length) {
+      var viewSlug = st.view !== "all" ? st.view : "all";
+      var subcatSlugs = st.subcats.map(function(s) {
+        return viewSlug + "-" + s.toLowerCase().replace(/\s+/g, "-");
+      });
+      fields.push({ key: "favorite_categories", val: [viewSlug].concat(subcatSlugs).join(", "), date: today });
+      subcatSlugs.forEach(function(slug, si) {
+        if (si < 3) fields.push({ key: "favorite_category_" + (si + 1), val: slug, date: today });
+      });
+    }
+    return fields;
+  }
+
+  function listingFacetGroup(label, items, group, checked, filterAttr) {
+    return '<h3>' + esc(label) + '</h3><div class="fgroup">' +
+      items.map(function(v) {
+        var c = checked.indexOf(v) >= 0;
+        return '<label><input type="checkbox" ' + filterAttr + '="' + group + '" value="' + esc(v) + '"' + (c ? ' checked' : '') + '>' + esc(v) + '</label>';
+      }).join('') +
+    '</div>';
+  }
+
+  var UC02_SIZE_ORDER = ["28","30","32","34","36","37","38","39","40","41","42","44","S","M","L","XL","One size"];
+
+  function uc02Listing(st) {
+    var view = st.view || "women";
+    var allProds = productsForView(view);
+    var prods = allProds.slice();
+
+    if (st.brands.length) prods = prods.filter(function(p) { return st.brands.indexOf(p.brand) >= 0; });
+    if (st.colours.length) prods = prods.filter(function(p) { return st.colours.indexOf(p.color) >= 0; });
+    if (st.sizes.length) prods = prods.filter(function(p) {
+      var pz = sizesFor(p); return st.sizes.some(function(s) { return pz.indexOf(s) >= 0; });
+    });
+    if (st.subcats.length) prods = prods.filter(function(p) { return st.subcats.indexOf(p.subcategory) >= 0; });
+    if (st.price === "0-50") prods = prods.filter(function(p) { return effectivePrice(p) < 50; });
+    else if (st.price === "50-100") prods = prods.filter(function(p) { return effectivePrice(p) >= 50 && effectivePrice(p) < 100; });
+    else if (st.price === "100+") prods = prods.filter(function(p) { return effectivePrice(p) >= 100; });
+
+    if (st.sort === "price-asc") prods.sort(function(a, b) { return effectivePrice(a) - effectivePrice(b); });
+    else if (st.sort === "price-desc") prods.sort(function(a, b) { return effectivePrice(b) - effectivePrice(a); });
+    else prods.sort(function(a, b) { return (b.popularity || 0) - (a.popularity || 0); });
+
+    var fBrands = [], fColours = [], fSizes = [], fSubcats = [];
+    allProds.forEach(function(p) {
+      if (fBrands.indexOf(p.brand) < 0) fBrands.push(p.brand);
+      if (p.color && fColours.indexOf(p.color) < 0) fColours.push(p.color);
+      if (p.subcategory && fSubcats.indexOf(p.subcategory) < 0) fSubcats.push(p.subcategory);
+      sizesFor(p).forEach(function(s) { if (fSizes.indexOf(s) < 0) fSizes.push(s); });
+    });
+    fBrands.sort(); fColours.sort(); fSubcats.sort();
+    fSizes.sort(function(a, b) {
+      var ai = UC02_SIZE_ORDER.indexOf(a), bi = UC02_SIZE_ORDER.indexOf(b);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1; if (bi >= 0) return 1;
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+
+    var tabsHTML = '<nav class="uc02-cat-nav">' +
+      ["women","men","accessories","sale"].map(function(v) {
+        return '<button class="uc02-cat-tab' + (v === view ? " is-active" : "") + '" data-uc02-view="' + v + '">' +
+          v.charAt(0).toUpperCase() + v.slice(1) + '</button>';
+      }).join("") +
+    '</nav>';
+
+    var chips = [];
+    st.brands.forEach(function(b) { chips.push('<span class="chip">' + esc(b) + '<button data-uc02-remove="brand:' + esc(b) + '" aria-label="Remove">×</button></span>'); });
+    st.colours.forEach(function(c) { chips.push('<span class="chip">' + esc(c) + '<button data-uc02-remove="colour:' + esc(c) + '" aria-label="Remove">×</button></span>'); });
+    st.sizes.forEach(function(s) { chips.push('<span class="chip">' + esc(s) + '<button data-uc02-remove="size:' + esc(s) + '" aria-label="Remove">×</button></span>'); });
+    st.subcats.forEach(function(s) { chips.push('<span class="chip">' + esc(s) + '<button data-uc02-remove="subcat:' + esc(s) + '" aria-label="Remove">×</button></span>'); });
+    if (st.gender) chips.push('<span class="chip">Gender: ' + esc(st.gender) + '<button data-uc02-remove="gender:" aria-label="Remove">×</button></span>');
+    if (st.price) chips.push('<span class="chip">Price: ' + esc(st.price) + '<button data-uc02-remove="price:" aria-label="Remove">×</button></span>');
+    var chipsHTML = chips.length
+      ? '<div class="chiprow">' + chips.join("") + '<button class="linkbtn" data-uc02-clear>Clear all</button></div>'
+      : '';
+
+    var genderSection = '<h3>Gender</h3><div class="fgroup">' +
+      ['women','men'].map(function(g) {
+        return '<label><input type="radio" name="uc02-gender" data-uc02-gender value="' + g + '"' + (st.gender === g ? ' checked' : '') + '>' + g.charAt(0).toUpperCase() + g.slice(1) + '</label>';
+      }).join('') +
+    '</div>';
+
+    var priceSection = '<h3>Price</h3><div class="fgroup">' +
+      '<select data-uc02-price>' +
+        '<option value="">All prices</option>' +
+        '<option value="0-50"' + (st.price === "0-50" ? ' selected' : '') + '>Under €50</option>' +
+        '<option value="50-100"' + (st.price === "50-100" ? ' selected' : '') + '>€50–€100</option>' +
+        '<option value="100+"' + (st.price === "100+" ? ' selected' : '') + '>€100+</option>' +
+      '</select>' +
+    '</div>';
+
+    var sidebarHTML = '<aside class="filters">' +
+      listingFacetGroup("Brand", fBrands, "brand", st.brands, "data-uc02-filter") +
+      listingFacetGroup("Colour", fColours, "colour", st.colours, "data-uc02-filter") +
+      (fSizes.length ? listingFacetGroup("Size", fSizes, "size", st.sizes, "data-uc02-filter") : '') +
+      (fSubcats.length > 1 ? listingFacetGroup("Category", fSubcats, "subcat", st.subcats, "data-uc02-filter") : '') +
+      genderSection +
+      priceSection +
+    '</aside>';
+
+    var sortBarHTML = '<div class="listing__bar">' +
+      '<span class="count">' + prods.length + (prods.length === 1 ? ' product' : ' products') + '</span>' +
+      '<label>Sort: <select data-uc02-sort>' +
+        '<option value="featured"' + (st.sort === "featured" ? ' selected' : '') + '>Featured</option>' +
+        '<option value="price-asc"' + (st.sort === "price-asc" ? ' selected' : '') + '>Price: low → high</option>' +
+        '<option value="price-desc"' + (st.sort === "price-desc" ? ' selected' : '') + '>Price: high → low</option>' +
+      '</select></label>' +
+    '</div>';
+
+    var gridContent = prods.length
+      ? '<div class="grid">' + prods.map(function(p) { return cardHTML(p); }).join("") + '</div>'
+      : '<div class="empty-state">No products match your filters.</div>';
+
+    return '<div class="uc02-shopler">' +
+      '<div class="uc02-shopler-body">' +
+        '<div class="wrap">' +
+          tabsHTML +
+          '<div class="listing">' +
+            sidebarHTML +
+            '<div>' +
+              sortBarHTML +
+              chipsHTML +
+              gridContent +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   /* ---------- per-use-case staging (presentation only) ---------- */
   var STAGE = {
     "email-capture": function (u) {
@@ -1916,16 +2140,26 @@
           '</div>' +
         '</div>';
     },
-    "profile-enrichment": function (u) {
-      var p = byPop(1)[0];
-      return '<div class="wrap demo-split">' + demoPDP(p,
-        sidePanel("Profile forming from behaviour", [
-          ["Interest", p.category + " · " + p.subcategory],
-          ["Brand affinity", p.brand],
-          ["Colour seen", p.color],
-          ["Price band", "€" + Math.floor(effectivePrice(p) / 10) * 10 + "+"],
-          ["Stage", u.lifecycle]
-        ])) + '</div>';
+    "profile-enrichment": function(u) {
+      if (!demoState.uc02) {
+        demoState.uc02 = { view: "women", subcats: [], brands: [], colours: [], sizes: [], gender: null, price: "", sort: "featured", tab: "profile", eventCount: 0, prevFieldKeys: [] };
+      }
+      var st = demoState.uc02;
+      var today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      var fields = uc02DeriveFields(st, today);
+      var prevKeys = (st.prevFieldKeys || []).slice();
+      st.prevFieldKeys = fields.map(function(f) { return f.key; });
+      var genderVal = st.gender ? st.gender.charAt(0).toUpperCase() + st.gender.slice(1) : null;
+      var leftHTML = ucactProfile({
+        tabAttr: "data-uc02-tab",
+        tab: st.tab,
+        showSearch: false,
+        systemFields: { fields: fields, prevKeys: prevKeys },
+        contactRows: [{ key: "Gender", val: genderVal || "Unknown", dim: !genderVal }],
+        eventCount: st.eventCount || 0,
+        previewNote: "Apply filters on the right → watch the profile update live."
+      });
+      return ucsplitShell(leftHTML, uc02Listing(st));
     },
     "rt-segmentation": function (u) {
       if (!demoState.uc03) {
@@ -2177,7 +2411,7 @@
 
   // Delegated interactions for demo pages (data-demo-* and data-uc01-*).
   document.addEventListener("click", function (e) {
-    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay]");
+    var el = e.target.closest("[data-demo-caption-toggle],[data-demo-popup-close],[data-demo-visitor],[data-demo-segment],[data-uc01-tab],[data-uc01-replay],[data-uc02-tab],[data-uc02-view],[data-uc02-remove],[data-uc02-clear]");
     if (!el) return;
     if (el.hasAttribute("data-demo-caption-toggle")) { e.preventDefault(); var c = document.querySelector("[data-demo-caption]"); if (c) c.classList.toggle("is-collapsed"); return; }
     if (el.hasAttribute("data-demo-popup-close")) { e.preventDefault(); var pp = el.closest("[data-demo-popup]"); if (pp) pp.remove(); return; }
@@ -2188,6 +2422,36 @@
       e.preventDefault();
       demoState.uc01Done = false; demoState.uc01Name = ""; demoState.uc01Email = "";
       demoState.uc01Animate = false; demoState.ucActTab = undefined;
+      rerenderDemo(); return;
+    }
+    if (el.hasAttribute("data-uc02-tab")) { e.preventDefault(); if (demoState.uc02) demoState.uc02.tab = el.getAttribute("data-uc02-tab"); rerenderDemo(); return; }
+    if (el.hasAttribute("data-uc02-view")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      demoState.uc02.view = el.getAttribute("data-uc02-view");
+      demoState.uc02.subcats = []; demoState.uc02.brands = []; demoState.uc02.colours = [];
+      demoState.uc02.sizes = []; demoState.uc02.price = ""; demoState.uc02.gender = null;
+      rerenderDemo(); return;
+    }
+    if (el.hasAttribute("data-uc02-remove")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      var rm = el.getAttribute("data-uc02-remove");
+      var rmColon = rm.indexOf(":");
+      var rmGroup = rm.slice(0, rmColon), rmVal = rm.slice(rmColon + 1);
+      if (rmGroup === "brand") { var rbi = demoState.uc02.brands.indexOf(rmVal); if (rbi >= 0) demoState.uc02.brands.splice(rbi, 1); }
+      else if (rmGroup === "colour") { var rci = demoState.uc02.colours.indexOf(rmVal); if (rci >= 0) demoState.uc02.colours.splice(rci, 1); }
+      else if (rmGroup === "size") { var rsi = demoState.uc02.sizes.indexOf(rmVal); if (rsi >= 0) demoState.uc02.sizes.splice(rsi, 1); }
+      else if (rmGroup === "subcat") { var rsci = demoState.uc02.subcats.indexOf(rmVal); if (rsci >= 0) demoState.uc02.subcats.splice(rsci, 1); }
+      else if (rmGroup === "gender") { demoState.uc02.gender = null; }
+      else if (rmGroup === "price") { demoState.uc02.price = ""; }
+      rerenderDemo(); return;
+    }
+    if (el.hasAttribute("data-uc02-clear")) {
+      e.preventDefault();
+      if (!demoState.uc02) return;
+      demoState.uc02.subcats = []; demoState.uc02.brands = []; demoState.uc02.colours = [];
+      demoState.uc02.sizes = []; demoState.uc02.gender = null; demoState.uc02.price = "";
       rerenderDemo(); return;
     }
   });

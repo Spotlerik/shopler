@@ -21,6 +21,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "VO-A-003",
       "NO-W-002"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -43,6 +51,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-001",
       "VO-A-001"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -65,6 +81,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-002",
       "VO-A-002"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -87,6 +109,13 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-M-003",
       "LU-M-002"
+    ],
+    "sizes": [
+      "28",
+      "30",
+      "32",
+      "34",
+      "36"
     ]
   },
   {
@@ -109,6 +138,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-002",
       "VO-A-001"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -131,6 +168,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-005",
       "AO-M-003"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -153,6 +193,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-001",
       "VO-A-003"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -175,6 +223,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-M-004",
       "KE-M-001"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -197,6 +251,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-003",
       "AO-W-002"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -219,6 +281,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "VO-A-001",
       "NO-W-005"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -241,6 +311,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-001",
       "KE-W-006"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -263,6 +341,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-003",
       "LU-W-001"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -285,6 +371,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-002",
       "VO-A-001"
+    ],
+    "sizes": [
+      "36",
+      "37",
+      "38",
+      "39",
+      "40",
+      "41"
     ]
   },
   {
@@ -307,6 +401,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-003",
       "AO-W-002"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -329,6 +431,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-001",
       "NO-W-005"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -351,6 +461,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-006",
       "AO-W-007"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -373,6 +491,13 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-003",
       "AO-M-003"
+    ],
+    "sizes": [
+      "28",
+      "30",
+      "32",
+      "34",
+      "36"
     ]
   },
   {
@@ -395,6 +520,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "LU-M-002"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -417,6 +548,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "VO-A-004"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -439,6 +576,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "VO-A-002"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -461,6 +604,13 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-002",
       "VO-A-004"
+    ],
+    "sizes": [
+      "28",
+      "30",
+      "32",
+      "34",
+      "36"
     ]
   },
   {
@@ -483,6 +633,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-001",
       "NO-W-004"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -505,6 +663,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "KE-M-002"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -527,6 +691,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "AO-M-004"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -549,6 +719,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-003",
       "LU-W-003"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -571,6 +749,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-001",
       "LU-M-004"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -593,6 +777,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-W-001",
       "LU-M-002"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -615,6 +802,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-M-002",
       "KE-M-001"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -637,6 +830,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-W-001",
       "NO-W-007"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -659,6 +860,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-U-003",
       "VO-A-004"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -681,6 +885,14 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-W-001",
       "LU-W-005"
+    ],
+    "sizes": [
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
     ]
   },
   {
@@ -703,6 +915,12 @@ window.PRODUCTS = [
     "pairs_with": [
       "LU-M-002",
       "KE-M-001"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
     ]
   },
   {
@@ -725,6 +943,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-005",
       "NO-W-002"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -747,6 +968,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-004",
       "AO-M-008"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -769,6 +993,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-002",
       "KE-M-001"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -791,6 +1018,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-003",
       "LU-M-008"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -813,6 +1043,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "KE-M-005",
       "LU-U-003"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -835,6 +1068,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "NO-W-002",
       "VO-A-001"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -857,6 +1093,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "VO-A-001",
       "VO-A-002"
+    ],
+    "sizes": [
+      "One size"
     ]
   },
   {
@@ -879,6 +1118,9 @@ window.PRODUCTS = [
     "pairs_with": [
       "AO-W-005",
       "VO-A-004"
+    ],
+    "sizes": [
+      "One size"
     ]
   }
 ];
