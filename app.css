@@ -536,9 +536,12 @@ select{font:inherit;font-size:var(--text-sm);padding:var(--space-2) var(--space-
 /* =====================================================================
    UC01 – email-capture page  (uc01-*)
    ===================================================================== */
-/* Replay: fixed corner, unobtrusive */
+/* Replay: fixed corner (UC01), unobtrusive */
 .uc01-replay{position:fixed;top:12px;right:14px;z-index:35;font-size:11px;padding:4px 10px;border-radius:var(--r-pill);border:1px solid #c9ced4;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;opacity:.75;transition:opacity .15s}
 .uc01-replay:hover{opacity:1}
+/* UC03 replay button lives inside left pane so it never overlaps the right-pane header */
+.uc03-replay-btn{position:absolute;top:10px;right:10px;z-index:10;font-size:11px;padding:4px 10px;border-radius:var(--r-pill);border:1px solid #c9ced4;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;opacity:.75;transition:opacity .15s}
+.uc03-replay-btn:hover{opacity:1}
 
 /* Shopler header reproduced inside right panel */
 .uc01-shopler-hdr{background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
@@ -577,3 +580,54 @@ select{font:inherit;font-size:var(--text-sm);padding:var(--space-2) var(--space-
 .uc01-success__title{font-family:var(--font-display);font-size:18px;font-weight:700;color:#0f172a;margin:0}
 .uc01-success__body{font-size:13px;color:#64748b;margin:0}
 .uc01-success__note{font-size:11px;color:#94a3b8;margin:0;font-style:italic}
+
+/* ===================================================================
+   UC03 — rt-segmentation  (uc03-*)
+   =================================================================== */
+.uc03-table-wrap{padding:0 12px 8px;overflow-x:auto}
+.uc03-aud-table{width:100%;border-collapse:collapse;font-size:11px}
+.uc03-aud-table th{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;padding:6px 4px 4px;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.uc03-aud-table td{padding:5px 4px;vertical-align:top;border-bottom:1px solid #f1f5f9;font-size:11px}
+.uc03-aud-id{width:20px;color:#94a3b8;font-size:10px}
+.uc03-aud-name{max-width:130px;font-weight:500;color:#0f172a;line-height:1.35}
+.uc03-aud-event{width:85px;color:#64748b;font-size:10px;line-height:1.3}
+.uc03-aud-ret{width:68px;color:#64748b;font-size:10px}
+.uc03-aud-time{width:48px;color:#16a34a;font-size:10px;font-weight:600;white-space:nowrap}
+.uc03-aud-empty{color:#94a3b8;font-style:italic;padding:20px 4px;text-align:center;font-size:12px}
+@keyframes uc03-row-in{0%{background:#dcfce7;opacity:0}15%{opacity:1}100%{background:transparent}}
+.uc03-aud-row--new td{animation:uc03-row-in 2s ease-out forwards}
+@media(prefers-reduced-motion:reduce){.uc03-aud-row--new td{animation:none;background:#dcfce7}}
+
+.uc03-kind{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;font-size:8px;font-weight:800;vertical-align:middle;margin-right:3px;flex-shrink:0}
+.uc03-kind--event{background:#dbeafe;color:#1d4ed8}
+.uc03-kind--profile{background:#fce7f3;color:#9d174d}
+.uc03-kind--intel{background:#f0fdf4;color:#15803d}
+
+.uc03-ret-note{font-size:10px;color:#94a3b8;margin:8px 12px 0;line-height:1.5;font-style:italic;padding:0 0 8px;border-bottom:1px solid #f1f5f9}
+
+.uc03-notmet{padding:8px 12px}
+.uc03-notmet-hdr{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px}
+.uc03-notmet-row{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #f8fafc}
+.uc03-notmet-row:last-child{border-bottom:none;margin-bottom:0}
+.uc03-notmet-name{font-size:11px;color:#475569;font-weight:500;line-height:1.3;margin-bottom:2px}
+.uc03-notmet-progress{font-size:10px;color:#94a3b8}
+
+.uc03-event-counter{padding:5px 12px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0}
+.uc03-event-counter b{color:#0f172a}
+
+/* Right-pane shop content */
+.uc03-shop{display:flex;flex-direction:column;flex:1;overflow-y:auto;min-height:0;background:#f8fafc}
+.uc03-shop-content{padding:14px 16px}
+.uc03-cat-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:#0f172a;margin:0 0 14px}
+.uc03-shop .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.uc03-shop .card__img--lifestyle,.uc03-shop .card__img--packshot{height:120px;object-fit:cover}
+.uc03-home-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.uc03-home-tile{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1/1;cursor:pointer;text-decoration:none}
+.uc03-home-tile img{width:100%;height:100%;object-fit:cover}
+.uc03-home-tile span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-weight:600;padding:6px 8px;text-align:center}
+.uc03-pdp{display:flex;flex-direction:column;gap:10px}
+.uc03-pdp-img{width:100%;border-radius:6px;max-height:200px;object-fit:cover}
+.uc03-pdp-brand{font-size:11px;font-weight:700;letter-spacing:.04em;color:#64748b;text-transform:uppercase}
+.uc03-pdp-name{font-size:15px;font-weight:700;color:#0f172a;margin:2px 0 6px}
+.uc03-back{background:none;border:none;padding:0 0 10px;font-size:12px;color:#64748b;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+.uc03-back:hover{color:#0f172a}
