@@ -631,3 +631,43 @@ select{font:inherit;font-size:var(--text-sm);padding:var(--space-2) var(--space-
 .uc03-pdp-name{font-size:15px;font-weight:700;color:#0f172a;margin:2px 0 6px}
 .uc03-back{background:none;border:none;padding:0 0 10px;font-size:12px;color:#64748b;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
 .uc03-back:hover{color:#0f172a}
+/* ==================== UC02 Profile Enrichment ==================== */
+
+/* System field rows with date column */
+.uc02-system-section{display:flex;flex-direction:column;gap:1px}
+.uc02-col-date-hdr{display:flex;justify-content:space-between;padding:0 8px 4px;font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em}
+.uc02-sysfield{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:5px 8px;border-radius:6px}
+.uc02-sysfield__left{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;overflow:hidden}
+.uc02-sysfield__key{font-size:11px;color:#64748b;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uc02-sysfield__val{font-size:12px;color:#0f172a;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uc02-sysfield__date{font-size:10px;color:#94a3b8;white-space:nowrap;flex-shrink:0;padding-top:2px}
+
+/* Flash animation for newly added fields */
+@keyframes uc02-flash{0%{background:#fef3c7}100%{background:transparent}}
+.uc02-sysfield--new{animation:uc02-flash .9s ease-out forwards}
+@media(prefers-reduced-motion:reduce){.uc02-sysfield--new{animation:none;background:#fef3c7}}
+
+/* Unknown / not-yet-set field value */
+.uc02-unknown{color:#94a3b8 !important;font-style:italic;font-weight:400 !important}
+
+/* Hint note at the bottom of the Activate panel */
+.uc02-preview-note{font-size:11px;color:#94a3b8;padding:8px 12px 10px;line-height:1.4;margin:0;font-style:italic;border-top:1px solid #f1f5f9;text-align:center}
+
+/* Right panel wrapper */
+.uc02-shopler{display:flex;flex-direction:column;min-height:100%;background:#f8fafc}
+.uc02-shopler-body{flex:1;overflow-y:auto}
+.uc02-shopler-body .wrap{padding:12px 16px;max-width:none}
+
+/* Category view tabs above the listing */
+.uc02-cat-nav{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.uc02-cat-tab{padding:5px 14px;border:1px solid #e2e8f0;border-radius:var(--r-pill);background:#fff;color:#64748b;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .12s,color .12s,border-color .12s;line-height:1.4}
+.uc02-cat-tab.is-active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.uc02-cat-tab:hover:not(.is-active){background:#f1f5f9;color:#0f172a;border-color:#cbd5e1}
+
+/* Price select inside the filters sidebar */
+.uc02-shopler-body .filters select{font-size:12px;font-family:inherit;border:1px solid #e2e8f0;border-radius:4px;padding:3px 6px;color:#0f172a;background:#fff;width:100%}
+
+/* Stack panes on narrow viewports */
+@media(max-width:1099px){
+  .uc02-shopler-body .wrap{padding:8px 12px}
+}
