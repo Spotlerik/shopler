@@ -197,9 +197,26 @@
      confirm it against that account's current Squeezely docs before go-live.
      ========================================================================== */
   window._sqzl = window._sqzl || [];
-  function sqzlPush(obj) { try { window._sqzl.push(obj); } catch (e) { /* never break the shop on tracking */ } }
+  function sqzlPush(obj) {
+    try {
+      window._sqzl.push(obj);
+      // Opt-in debug: `localStorage.SHOPLER_ACTIVATE_DEBUG = "true"` logs every sent event.
+      if (window.localStorage && window.localStorage.SHOPLER_ACTIVATE_DEBUG === "true") console.log("[Shopler Activate]", obj);
+    } catch (e) { /* never break the shop on tracking */ }
+  }
+  // Push a raw payload straight onto the Activate queue (spec alias). Base fields
+  // (userid/language/email) are added by the specific track* helpers, not here.
+  function trackActivateEvent(payload) { sqzlPush(payload); }
   // Squeezely language tag from the active toggle (Activate needs this for multilingual products).
   function sqzlLang() { return state.lang === "nl" ? "nl-NL" : "en-GB"; }
+  // Stable, lowercase category slug (e.g. "Women" -> "women") for category_id / category_ids.
+  function sqzlSlug(s) { return String(s || "").toLowerCase().trim().replace(/\s+/g, "-"); }
+  function sqzlCategoryIds(p) {
+    var ids = [], c = sqzlSlug(p.category), sc = sqzlSlug(p.subcategory);
+    if (c) ids.push(c);
+    if (c && sc) ids.push(c + "-" + sc); else if (sc) ids.push(sc);
+    return ids;
+  }
   // Stable anonymous id so an unknown visitor can later be merged onto a known one (merge on User ID).
   function getUserId() {
     var id = localStorage.getItem("shopler_uid");
@@ -215,6 +232,7 @@
     var o = {
       id: p.sku, name: name(p), brand: p.brand,
       category: p.category, subcategory: p.subcategory,
+      category_ids: sqzlCategoryIds(p),
       price: effectivePrice(p), currency: "EUR",
       language: sqzlLang(), quantity: qty || 1
     };
@@ -246,10 +264,22 @@
     sqzlPush(sqzlBase({ event: "ViewContent", currency: "EUR", products: [sqzlProduct(p, 1)] }));
   }
   function trackViewCategory(catName) {
-    sqzlPush(sqzlBase({ event: "ViewCategory", category: catName }));
+    // `category` kept for the existing live mapping; category_id/objectname added for Activate's spec.
+    sqzlPush(sqzlBase({ event: "ViewCategory", category: catName,
+      category_id: sqzlSlug(catName), objectname: catName }));
+  }
+  // Search — Shopler currently has no search UI, so nothing calls this yet; kept here
+  // so a future search box can fire it. Only fires for a non-empty keyword.
+  function trackSearch(keyword, products) {
+    if (!keyword) return;
+    var list = (products || []).slice(0, 10).map(function (p) { return sqzlProduct(p, 1); });
+    sqzlPush(sqzlBase({ event: "Search", keyword: keyword, products: list }));
   }
   function trackAddToCart(p, qty, size) {
     sqzlPush(sqzlBase({ event: "AddToCart", currency: "EUR", products: [sqzlProduct(p, qty || 1, size)] }));
+  }
+  function trackRemoveFromCart(p, qty, size) {
+    sqzlPush(sqzlBase({ event: "RemoveFromCart", products: [sqzlProduct(p, qty || 1, size)] }));
   }
   function trackInitiateCheckout() {
     sqzlPush(sqzlBase({ event: "InitiateCheckout", currency: "EUR",
@@ -259,17 +289,32 @@
     sqzlPush(sqzlBase({ event: "PrePurchase", currency: "EUR",
       orderid: order.orderid, totalvalue: round2(order.total), products: order.products }));
   }
+  // Purchase must fire at most once per order. Sent order ids are remembered in
+  // localStorage so a page refresh / re-render of the confirmation never re-fires it.
+  var SENT_ORDERS_KEY = "shopler_sent_orders";
+  function purchaseAlreadySent(id) {
+    try { return JSON.parse(localStorage.getItem(SENT_ORDERS_KEY) || "[]").indexOf(id) >= 0; } catch (e) { return false; }
+  }
+  function markPurchaseSent(id) {
+    try {
+      var s = JSON.parse(localStorage.getItem(SENT_ORDERS_KEY) || "[]");
+      if (s.indexOf(id) < 0) { s.push(id); localStorage.setItem(SENT_ORDERS_KEY, JSON.stringify(s.slice(-50))); }
+    } catch (e) { /* ignore */ }
+  }
   function trackPurchase(order) {
+    if (!order || !order.orderid || purchaseAlreadySent(order.orderid)) return; // once per order
     if (order.email) setKnownEmail(order.email);
     var ex = { event: "Purchase", orderid: order.orderid, currency: "EUR",
       totalvalue: round2(order.total), products: order.products };
     if (order.email) ex.email = order.email; // explicit, beyond the base recognition key
     sqzlPush(sqzlBase(ex));
+    markPurchaseSent(order.orderid);
   }
   function trackEmailOptIn(email, subscribe) {
     setKnownEmail(email); // from now on this visitor is "known"
+    var opted = subscribe === false ? "no" : "yes";
     sqzlPush(sqzlBase({ event: "EmailOptIn", email: email,
-      newsletter: subscribe === false ? "no" : "yes" }));
+      newsletter: opted, marketing: opted }));
   }
 
   /* ============================================================================
@@ -381,6 +426,8 @@
   }
   function removeAt(i) {
     if (i < 0 || i >= state.cart.length) return;
+    var l = state.cart[i], p = l && BY_SKU[l.sku];
+    if (p) trackRemoveFromCart(p, l.qty, l.size); // fire before the line is gone
     state.cart.splice(i, 1);
     persist(); renderChrome(); renderDrawer();
   }
