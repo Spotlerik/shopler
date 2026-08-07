@@ -1,0 +1,71 @@
+/* ============================================================
+   Styles for the Spotler Activate demo landing pages only.
+   Loaded after tokens.css + app.css; reuses the same tokens so
+   these pages look like part of the shop. Namespaced to avoid
+   touching the real storefront.
+   ============================================================ */
+
+/* Injection anchors: invisible + zero-gap when empty (page looks complete
+   without the Activate element), proper spacing once Activate fills them. */
+.uc-slot:empty { display: none; }
+.uc-slot:not(:empty) { margin: var(--space-8) 0; }
+#uc-slot-below-atc:not(:empty),
+#uc-slot-hero-top:not(:empty) { margin: var(--space-4) 0; }
+#uc-slot-overlay { }  /* overlays inject their own positioning */
+
+/* header language toggle rendered as links on static pages */
+.lang a { display:inline-block; padding:4px 9px; font-size:var(--text-sm); text-decoration:none;
+  color:var(--stone-600); border-radius:var(--r-pill); }
+.lang a.is-active { background:var(--ink); color:var(--paper); }
+
+/* PDP description block (the real shop PDP has no long description section) */
+.pdp__section { max-width:720px; margin-top:var(--space-10); }
+.pdp__section h2 { font-size:var(--text-md); margin-bottom:var(--space-3); }
+.pdp__desc { color:var(--ink-soft); line-height:1.7; max-width:62ch; }
+.pdp__oos { color:var(--stone-600); margin:var(--space-2) 0 var(--space-4); }
+
+/* ---- Cart page ---- */
+.dcart__grid { display:grid; grid-template-columns:1fr 340px; gap:var(--space-10); align-items:start; }
+@media(max-width:820px){ .dcart__grid{ grid-template-columns:1fr; } }
+.dcart-line { display:grid; grid-template-columns:88px 1fr auto auto; gap:var(--space-4); align-items:center;
+  padding:var(--space-4) 0; border-bottom:1px solid var(--line); }
+.dcart-line img { width:88px; height:110px; object-fit:cover; border-radius:var(--r-sm); background:var(--surface-sunken); }
+.dcart-line__name { font-family:var(--font-display); }
+.dcart-line__size { font-size:var(--text-sm); color:var(--stone-600); }
+.dcart-line .linkbtn { margin-top:var(--space-2); }
+.dcart-line__qty { display:flex; flex-direction:column; gap:4px; font-size:var(--text-xs); color:var(--stone-600); text-align:center; }
+.dqty { display:inline-flex; align-items:center; border:1px solid var(--stone-300); border-radius:var(--r-pill); }
+.dqty button { border:0; background:none; padding:2px 10px; cursor:pointer; font-size:var(--text-md); }
+.dqty span { font-family:var(--font-mono); min-width:22px; text-align:center; }
+.dcart__summary { background:var(--surface-sunken); border-radius:var(--r); padding:var(--space-6); position:sticky; top:88px; }
+.dcart__summary h2 { font-size:var(--text-md); margin-bottom:var(--space-4); }
+.drow { display:flex; justify-content:space-between; padding:var(--space-2) 0; color:var(--ink-soft); }
+.drow--total { border-top:1px solid var(--line); margin-top:var(--space-2); padding-top:var(--space-3);
+  font-weight:var(--w-semibold); color:var(--ink); font-size:var(--text-md); }
+.dcart__summary .btn { margin-top:var(--space-4); }
+.dcart__cont { display:block; text-align:center; margin-top:var(--space-3); font-size:var(--text-sm); color:var(--stone-600); }
+
+/* ---- Confirmation page ---- */
+.dconf__head { text-align:center; padding:var(--space-8) 0 var(--space-6); }
+.dconf__head .tick { width:48px; height:48px; line-height:48px; border-radius:50%; margin:0 auto var(--space-4);
+  background:var(--success,#2E7D5B); color:#fff; font-size:24px; }
+.dconf__head h1 { font-size:var(--text-xl); }
+.dconf__sub { color:var(--ink-soft); max-width:52ch; margin:var(--space-3) auto 0; }
+.dconf__grid { display:grid; grid-template-columns:1fr 300px; gap:var(--space-10); align-items:start; margin-top:var(--space-6); }
+@media(max-width:820px){ .dconf__grid{ grid-template-columns:1fr; } }
+.dconf__summary h2, .dconf__delivery h2 { font-size:var(--text-md); margin-bottom:var(--space-4); }
+.dsum-line { display:grid; grid-template-columns:56px 1fr auto; gap:var(--space-4); align-items:center;
+  padding:var(--space-3) 0; border-bottom:1px solid var(--line); }
+.dsum-line img { width:56px; height:70px; object-fit:cover; border-radius:var(--r-sm); background:var(--surface-sunken); }
+.dsum-line__meta { font-size:var(--text-sm); color:var(--stone-600); }
+.dconf__delivery { background:var(--surface-sunken); border-radius:var(--r); padding:var(--space-6); }
+
+/* ---- Account page ---- */
+.dacct__grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-6); }
+@media(max-width:700px){ .dacct__grid{ grid-template-columns:1fr; } }
+.dacct__card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:var(--space-6); }
+.dacct__card h2 { font-size:var(--text-md); margin-bottom:var(--space-4); }
+.dfield { display:block; margin-bottom:var(--space-4); }
+.dfield span { display:block; font-size:var(--text-sm); color:var(--stone-600); margin-bottom:4px; }
+.dfield input { width:100%; border:1px solid var(--stone-300); border-radius:var(--r-sm); padding:9px 11px; font:inherit; background:var(--surface); }
+.dtoggle { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-2) 0; }
