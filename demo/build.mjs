@@ -108,8 +108,8 @@ const MONOGRAM = '<svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="t
   '<rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="var(--accent)"/>' +
   '<path d="M25.5 14.2c-1.1-1.5-3-2.4-5.4-2.4-3.3 0-5.6 1.7-5.6 4.3 0 2.5 1.9 3.6 5 4.2 2.7.5 3.7 1 3.7 2.2 0 1.2-1.2 2-3.1 2-2 0-3.4-.8-4.4-2.2" fill="none" stroke="var(--paper)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-function header(lang, slug) {
-  const t = I18N[lang], other = lang === "en" ? "nl" : "en";
+function header(lang, enSlug, nlSlug) {
+  const t = I18N[lang];
   const nav = [["women","nav_women"],["men","nav_men"],["accessories","nav_accessories"]]
     .map(([c,k]) => `<a href="${REL}#/c/${c}">${esc(t[k])}</a>`).join("") +
     `<a href="${REL}#/c/sale" class="is-sale">${esc(t.nav_sale)}</a>`;
@@ -118,8 +118,8 @@ function header(lang, slug) {
       <nav class="nav">${nav}</nav>
       <div class="hdr__actions">
         <div class="lang">
-          <a data-lang="en" class="${lang==="en"?"is-active":""}" href="../../en/${slug}/">EN</a>
-          <a data-lang="nl" class="${lang==="nl"?"is-active":""}" href="../../nl/${slug}/">NL</a>
+          <a data-lang="en" class="${lang==="en"?"is-active":""}" href="../../en/${enSlug}/">EN</a>
+          <a data-lang="nl" class="${lang==="nl"?"is-active":""}" href="../../nl/${nlSlug}/">NL</a>
         </div>
         <a class="icon-btn cart-btn" href="${REL}#/" aria-label="${esc(t.cart)}">
           <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
@@ -355,7 +355,7 @@ function trackingScript(kind, payload) {
 }
 
 /* ---------------- page shell ---------------- */
-function page(lang, slug, title, bodyHTML, tracking, overlaySlot) {
+function page(lang, enSlug, nlSlug, title, bodyHTML, tracking, overlaySlot) {
   const t = I18N[lang];
   return `<!doctype html>
 <html lang="${lang}">
@@ -380,7 +380,7 @@ l.defer=true;l.src=z;y.parentNode.insertBefore(l,y)})
 <link rel="stylesheet" href="${REL}demo/demo.css">
 </head>
 <body>
-${header(lang, slug)}
+${header(lang, enSlug, nlSlug)}
 <main id="app">
 ${bodyHTML}
 </main>
@@ -441,6 +441,26 @@ const SPECS = [
     anchors:["uc-slot-profile"], note:"Deliberately sparse account form, so progressive profiling has something to add." }
 ];
 
+/* ---------------- NL slugs (Dutch use-case names, slugified; numbers dropped) ----------------
+   EN pages keep the English slug; NL pages use the Dutch name so the URL reads in Dutch.
+   Activate targets by URL, so the NL targeting rules use these Dutch slugs. */
+const NL_SLUG = {
+  "homepage-personalisation": "personaliseer-de-homepage",
+  "recognise-returning-visitors": "herken-terugkerende-bezoekers",
+  "pick-up-where-you-left-off": "toon-eerder-bekeken-producten",
+  "recommend-products": "toon-relevante-producten-op-je-site",
+  "grow-email-list": "laat-je-e-maillijst-groeien",
+  "similar-products": "raad-vergelijkbare-producten-aan",
+  "social-proof": "voeg-social-proof-toe-aan-productpaginas",
+  "timely-popups": "overtuig-met-pop-ups-op-het-juiste-moment",
+  "back-in-stock": "stuur-back-in-stock-meldingen",
+  "bring-browsers-back": "breng-geinteresseerde-bezoekers-terug",
+  "recover-abandoned-cart": "win-verlaten-winkelmandjes-terug",
+  "increase-basket-value": "verhoog-de-winkelmandwaarde",
+  "turn-buyers-into-repeat": "maak-van-kopers-terugkerende-klanten",
+  "enrich-profiles": "bouw-rijkere-klantprofielen-op"
+};
+
 /* ---------------- emit ---------------- */
 const LANGS = ["en","nl"];
 let count = 0;
@@ -465,8 +485,9 @@ for (const spec of SPECS) {
     }
     else if (spec.type === "account") { body = accountBody(lang, spec.opts); tracking = trackingScript("page"); }
 
-    const html = page(lang, spec.slug, spec.title[lang], body, tracking, spec.overlay);
-    const dir = join(ROOT, "demo", lang, spec.slug);
+    const html = page(lang, spec.slug, NL_SLUG[spec.slug], spec.title[lang], body, tracking, spec.overlay);
+    const outSlug = lang === "en" ? spec.slug : NL_SLUG[spec.slug];
+    const dir = join(ROOT, "demo", lang, outSlug);
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "index.html"), html);
     count++;
@@ -482,18 +503,18 @@ Blank base pages for the Demo Studio. Each is a realistic Shopler page of the ri
 empty \`uc-slot-*\` anchors listed below. The clean shop at \`/shopler/\` is unchanged and links
 to none of these pages.
 
-- **URL pattern:** \`${BASE}/<lang>/<slug>/\` — \`<lang>\` is \`en\` or \`nl\`; the \`<slug>\` is English in both languages.
+- **URL pattern:** \`${BASE}/<lang>/<slug>/\` — \`<lang>\` is \`en\` or \`nl\`. The EN slug is English; the NL slug is the Dutch use-case name (see table).
 - **Regenerate:** \`node demo/build.mjs\` (from repo root). Do not hand-edit \`demo/<lang>/<slug>/index.html\`.
 - **Activate tag:** the tracker (\`${TRACKER}\`) is present on every page (same as the shop).
 - **Machine-readable data:** PDPs expose \`data-product-*\` on \`.pdp\` + \`window.shoplerProduct\` + a \`ViewContent\`/\`view_item\` push. Cart pages expose \`data-line-*\` per line + \`window.shoplerCart\` + a \`view_cart\` push. Category pages fire \`ViewCategory\`; confirmation fires \`purchase\`.
 - **Anchors:** empty in the base page; styled to add spacing only once filled (no empty gap when unfilled, room to grow when injected). IDs are stable — treat them as Activate targeting rules.
 - All pages carry \`<meta name="robots" content="noindex,nofollow">\`.
 
-| # | Use case | Slug | Type | EN URL | NL URL | Injection anchors (empty in base) |
-|---|---|---|---|---|---|---|
+| # | Use case | Type | EN URL | NL URL | Injection anchors (empty in base) |
+|---|---|---|---|---|---|
 `;
 SPECS.forEach((s,i) => {
-  readme += `| ${i+1} | ${s.uc} | \`${s.slug}\` | ${s.type} | ${BASE}/en/${s.slug}/ | ${BASE}/nl/${s.slug}/ | ${s.anchors.length?s.anchors.map(a=>`\`#${a}\``).join(", "):"— (behavioural / overlay)"}${s.overlay&&!s.anchors.includes("uc-slot-overlay")?", `#uc-slot-overlay`":""} |\n`;
+  readme += `| ${i+1} | ${s.uc} | ${s.type} | ${BASE}/en/${s.slug}/ | ${BASE}/nl/${NL_SLUG[s.slug]}/ | ${s.anchors.length?s.anchors.map(a=>`\`#${a}\``).join(", "):"— (behavioural / overlay)"}${s.overlay&&!s.anchors.includes("uc-slot-overlay")?", `#uc-slot-overlay`":""} |\n`;
 });
 readme += `\n## Notes per page\n`;
 SPECS.forEach((s,i) => { if (s.note) readme += `- **${s.slug}** — ${s.note}\n`; });
